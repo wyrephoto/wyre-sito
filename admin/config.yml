@@ -6,7 +6,7 @@
 # Le istruzioni complete sono in ISTRUZIONI_PUBBLICAZIONE.txt.
 backend:
   name: github
-  repo: NOME-UTENTE/NOME-REPOSITORY
+  repo: wyrephoto/wyre-sito
   branch: main
 
 # Cartella dove finiscono le foto caricate dal pannello, e percorso con
