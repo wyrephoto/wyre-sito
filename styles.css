@@ -1,0 +1,1359 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=Manrope:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#080909;--bg2:#0d0e0e;--fg:#e9e7df;--muted:#858780;
+  --line:rgba(233,231,223,.14);--soft:rgba(233,231,223,.055);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg);overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Manrope,Arial,sans-serif;font-weight:300;line-height:1.45;overflow-x:hidden}
+body:has(.viewer.open),body:has(.sound-player.open),body.intro-active{overflow:hidden}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
+::selection{background:var(--fg);color:var(--bg)}
+.grain,.intro-grain{position:fixed;inset:0;pointer-events:none;z-index:200;opacity:.055;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");mix-blend-mode:screen}
+.ambient{position:fixed;inset:-20%;pointer-events:none;z-index:-1;background:radial-gradient(circle at 55% 30%,rgba(70,76,77,.11),transparent 34%),radial-gradient(circle at 15% 80%,rgba(23,42,50,.08),transparent 30%);filter:blur(50px)}
+.scroll-progress{position:fixed;left:0;right:0;bottom:0;height:2px;background:transparent;z-index:210}.scroll-progress span{display:block;width:0;height:100%;background:var(--fg);opacity:.7}
+.nav{position:fixed;top:0;left:0;right:0;height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;z-index:150;mix-blend-mode:difference;color:#fff}
+.brand{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase}.brand span{opacity:.35;margin:0 4px}.brand #navSectionLabel{opacity:1}
+.nav nav{display:flex;gap:28px}.nav nav a,.lang,.sound-toggle{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.11em;text-transform:uppercase;opacity:.72;transition:opacity .25s}.nav nav a:hover,.lang:hover,.sound-toggle:hover{opacity:1}
+.nav-tools{display:flex;align-items:center;gap:18px}.lang,.sound-toggle{border:0;background:none;cursor:pointer;padding:5px}
+.sound-toggle{display:flex;align-items:center;gap:8px}.sound-icon{display:flex;gap:2px;align-items:center;height:11px}.sound-icon i{display:block;width:1px;height:4px;background:#fff;opacity:.75}.sound-icon i:nth-child(2){height:8px}.sound-icon i:nth-child(3){height:11px}.sound-icon i:nth-child(4){height:6px}
+.sound-toggle.off .sound-icon i{height:2px}.sound-toggle.off #soundLabel{opacity:.45}
+.audio-readout{position:fixed;right:4vw;bottom:24px;z-index:120;display:flex;align-items:center;gap:8px;font:7px "DM Mono",monospace;letter-spacing:.12em;color:var(--muted);opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s,color .25s;pointer-events:none;border:0;background:none;padding:0;text-align:left;cursor:pointer}.audio-readout.visible{opacity:1;transform:none;pointer-events:auto}.audio-readout:hover{color:var(--fg)}.audio-readout b{color:var(--fg);font-weight:400}.audio-pulse{width:5px;height:5px;border:1px solid var(--fg);border-radius:50%;animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{transform:scale(.45);opacity:.35}}
+
+.intro{position:fixed;inset:0;background:#050606;z-index:500;display:grid;place-items:center;overflow:hidden;transition:opacity 1.2s var(--ease),visibility 1.2s}.intro.is-exiting{opacity:0;visibility:hidden;pointer-events:none}
+.intro-image{position:absolute;inset:0}.intro-image img{width:100%;height:100%;object-fit:cover;filter:brightness(.4) saturate(.55) contrast(1.1);transform:scale(1.05);animation:introDrift 16s ease-in-out infinite alternate}@keyframes introDrift{to{transform:scale(1.14) translate3d(-2.2%,1.6%,0)}}
+.intro-wash{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(10,16,18,.1),rgba(3,5,5,.74) 72%),linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.5))}
+/* V07.13: the intro read as flat/black to Andrea — the photo was
+   almost entirely crushed by .intro-wash. Wash eased slightly so the
+   photo's own slow drift shows through more, plus a new animated
+   atmosphere layer (.intro-atmosphere, injected by script.js with the
+   same prepend pattern used elsewhere on the site) — three soft,
+   colour-cycling glows in the same desaturated palette as Threshold/
+   About, drifting slowly behind the wordmark. Sits above .intro-wash,
+   below .intro-center (z-index 1 vs 2) so it never competes with the
+   text. */
+.intro-atmosphere{position:absolute;inset:-15%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.6;filter:blur(60px);animation:introAtmosphereDrift 34s ease-in-out infinite alternate}
+.intro-atmosphere::before,.intro-atmosphere::after{content:"";position:absolute;inset:0;background-repeat:no-repeat}
+.intro-atmosphere::before{
+  background-image:
+    radial-gradient(ellipse 46% 40% at 22% 28%, rgba(150,132,90,.5), transparent 72%),
+    radial-gradient(ellipse 42% 46% at 80% 74%, rgba(70,96,92,.46), transparent 74%);
+  animation:introAtmosphereColorA 22s ease-in-out infinite;
+}
+.intro-atmosphere::after{
+  background-image:radial-gradient(ellipse 38% 34% at 66% 18%, rgba(96,108,96,.4), transparent 74%);
+  animation:introAtmosphereColorB 26s ease-in-out infinite;
+}
+@keyframes introAtmosphereDrift{
+  0%{transform:translate3d(-1.5%,-1%,0) scale(1)}
+  100%{transform:translate3d(2%,1.5%,0) scale(1.08)}
+}
+@keyframes introAtmosphereColorA{
+  0%,100%{background-image:radial-gradient(ellipse 46% 40% at 22% 28%, rgba(150,132,90,.5), transparent 72%),radial-gradient(ellipse 42% 46% at 80% 74%, rgba(70,96,92,.46), transparent 74%)}
+  50%{background-image:radial-gradient(ellipse 46% 40% at 30% 34%, rgba(78,98,118,.5), transparent 72%),radial-gradient(ellipse 42% 46% at 74% 68%, rgba(140,122,84,.46), transparent 74%)}
+}
+@keyframes introAtmosphereColorB{
+  0%,100%{opacity:.7}
+  50%{opacity:.3}
+}
+@media(max-width:760px){.intro-atmosphere{filter:blur(40px)}}
+@media(prefers-reduced-motion:reduce){.intro-atmosphere,.intro-atmosphere::before,.intro-atmosphere::after{animation:none}}
+.intro-top,.intro-bottom{position:absolute;left:4vw;right:4vw;display:flex;justify-content:space-between;font:7px "DM Mono",monospace;letter-spacing:.13em;text-transform:uppercase;color:rgba(233,231,223,.58)}.intro-top{top:28px;justify-content:flex-end}.intro-bottom{bottom:28px}
+.intro-top .lang{font:inherit;letter-spacing:inherit;color:inherit;opacity:1;border:0;background:none;cursor:pointer;padding:0;transition:color .25s}.intro-top .lang:hover{color:var(--fg)}
+.intro-center{position:relative;text-align:center;z-index:2}.intro-pre{font:8px "DM Mono",monospace;letter-spacing:.19em;color:rgba(233,231,223,.58);margin:0 0 28px}
+.intro-wordmark{display:flex;justify-content:center;gap:.005em;font-size:clamp(74px,15vw,220px);line-height:.72;letter-spacing:-.105em;font-weight:300}
+.intro-wordmark span{display:inline-block;animation:wordIn 1.3s var(--ease) both}.intro-wordmark span:nth-child(1){animation-delay:.05s}.intro-wordmark span:nth-child(2){animation-delay:.1s}.intro-wordmark span:nth-child(3){animation-delay:.15s}.intro-wordmark span:nth-child(4){animation-delay:.2s}
+@keyframes wordIn{from{opacity:0;transform:translateY(35px);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+.intro-origin{font:9px "DM Mono",monospace;letter-spacing:.16em;color:var(--muted);margin:28px 0 46px;text-transform:uppercase}
+.enter-button{border:0;background:none;cursor:pointer;display:inline-flex;align-items:center;gap:12px;font:9px "DM Mono",monospace;letter-spacing:.15em;text-transform:uppercase;padding:10px 0}.enter-line{width:54px;height:1px;background:var(--fg);opacity:.65;transition:width .45s var(--ease)}.enter-button:hover .enter-line{width:88px}.enter-button:hover{opacity:.9}
+.intro-hint{font:7px "DM Mono",monospace;letter-spacing:.11em;text-transform:uppercase;color:rgba(233,231,223,.35);margin:22px 0 0}
+main{opacity:1;transition:opacity .9s}.intro-active main{opacity:.15}.intro-active .nav{opacity:0;pointer-events:none}
+main>section{padding-left:5vw;padding-right:5vw}
+.hero{min-height:100svh;position:relative;display:flex;align-items:center;overflow:hidden;padding:10vh 5vw 7vh}.hero-copy{position:relative;z-index:5;max-width:720px}
+.eyebrow,.micro,.section-index,.hero-coordinate,.project-mark>span,.about-mark,.photo-meta,.card-index,.project-image-meta,footer,.viewer-top,.viewer figcaption,.archive-end{font-family:"DM Mono",monospace;text-transform:uppercase;letter-spacing:.1em}
+.eyebrow{font-size:8px;color:var(--muted);letter-spacing:.16em}.hero h1{margin:4vh 0 5vh;font-size:clamp(76px,11vw,172px);line-height:.79;letter-spacing:-.075em;font-weight:300;max-width:950px}.hero h1 i,.contact h2 i,.section-head h2 i{font-family:Georgia,serif;font-weight:400;letter-spacing:-.09em}.hero-note{max-width:450px;font-size:13px;color:var(--muted)}
+.scroll-cue{margin-top:9vh;display:flex;align-items:center;gap:11px;font:8px "DM Mono",monospace;letter-spacing:.14em}.cue-line{width:50px;height:1px;background:var(--fg);opacity:.55}
+.hero-coordinate{position:absolute;left:5vw;bottom:4vh;font-size:7px;color:var(--muted);z-index:5}.hero-coordinate span{margin-left:18px;color:var(--fg);opacity:.65}
+.floating-stage{position:absolute;inset:0;pointer-events:none;transition:transform 1.2s var(--ease)}.float{position:absolute;margin:0;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.28);transform:rotate(var(--f-rot,0deg));animation:floatIdle var(--f-dur,9s) ease-in-out infinite;animation-delay:var(--f-delay,0s);will-change:transform}.float img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.72) contrast(.96);transition:transform 1.4s var(--ease)}
+@keyframes floatIdle{
+  0%,100%{transform:rotate(var(--f-rot,0deg)) translate3d(0,0,0) scale(1)}
+  50%{transform:rotate(calc(var(--f-rot,0deg) + .6deg)) translate3d(0,-14px,0) scale(1.015)}
+}
+.f1{width:clamp(170px,18vw,310px);height:clamp(260px,31vw,470px);right:12vw;top:13vh;--f-rot:2deg;--f-dur:9.5s;--f-delay:0s}.f2{width:clamp(125px,14vw,230px);height:clamp(190px,25vw,370px);right:37vw;bottom:8vh;--f-rot:-3deg;--f-dur:11s;--f-delay:-3s}.f3{width:clamp(110px,12vw,195px);height:clamp(170px,22vw,320px);right:3vw;bottom:23vh;--f-rot:4deg;--f-dur:8.5s;--f-delay:-5.5s}.f4{width:clamp(110px,12vw,205px);height:clamp(165px,21vw,305px);right:25vw;top:42vh;--f-rot:-1deg;--f-dur:10s;--f-delay:-1.5s}
+.hero-orbit{position:absolute;border:1px solid rgba(233,231,223,.08);border-radius:50%;pointer-events:none}.o1{width:46vw;height:46vw;right:-12vw;top:5vh}.o2{width:24vw;height:24vw;right:25vw;bottom:-10vw}.hero-noise{position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,rgba(8,9,9,.76) 32%,rgba(8,9,9,.12) 74%,rgba(8,9,9,.3) 100%);z-index:2;pointer-events:none}
+
+.threshold{padding-top:15vh;padding-bottom:18vh;border-top:1px solid var(--line);position:relative;isolation:isolate;overflow:hidden}.threshold-top,.about-head{display:flex;justify-content:space-between;align-items:center}.section-index{font-size:8px;color:var(--muted)}.micro{font-size:7px;color:var(--muted)}
+.threshold-body{display:grid;grid-template-columns:minmax(0,8fr) 2fr;gap:8vw;margin-top:8vw}.statement{font-size:clamp(43px,6.3vw,96px);line-height:.98;letter-spacing:-.055em;max-width:1100px;margin:0}.statement span{display:inline}.image-word{position:relative;cursor:crosshair;transition:color .3s}.image-word:hover{color:#fff}.serif-word{font-family:Georgia,serif;font-style:italic}.threshold-side{align-self:end;display:flex;flex-direction:column;gap:14px;color:var(--muted);font:8px "DM Mono",monospace}.side-rule{width:100%;height:1px;background:var(--line)}
+
+.archive{padding-top:9vh;padding-bottom:18vh}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:8vw}.section-head h2{font-size:clamp(65px,10vw,150px);line-height:.77;letter-spacing:-.08em;font-weight:300;margin:28px 0 0}.section-desc{max-width:310px;font-size:12px;color:var(--muted);margin:0 0 6px}
+.filters{display:flex;gap:20px;margin:7vw 0 4vw;border-bottom:1px solid var(--line);padding-bottom:13px}.filter{border:0;background:none;padding:0 0 4px;cursor:pointer;font:8px "DM Mono",monospace;letter-spacing:.12em;color:var(--muted);position:relative}.filter:after{content:"";position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--fg);transition:width .3s var(--ease)}.filter.active,.filter:hover{color:var(--fg)}.filter.active:after{width:100%}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:7vw 2vw;align-items:start}.photo-card{appearance:none;border:0;background:none;padding:0;text-align:left;cursor:pointer;position:relative;display:block;grid-column:span 3;transition:opacity .5s,transform .9s var(--ease);overflow:visible}.photo-card.tall{grid-column:span 4}.photo-card:nth-child(2){grid-column:span 3;margin-top:11vw}.photo-card:nth-child(3){grid-column:span 3;margin-top:2vw}.photo-card:nth-child(4){grid-column:span 4;margin-top:9vw}.photo-card:nth-child(5){grid-column:span 3}.photo-card:nth-child(6){grid-column:span 3;margin-top:12vw}.photo-card:nth-child(7){grid-column:span 4;margin-top:3vw}.photo-card:nth-child(8){grid-column:span 3;margin-top:10vw}.photo-card.is-hidden{display:none}.photo-card img{width:100%;height:auto;display:block;aspect-ratio:2/3;object-fit:cover;filter:saturate(.78);transition:transform 1s var(--ease),filter 1s var(--ease)}.photo-card:hover img{transform:scale(1.028);filter:brightness(1.06) saturate(.68)}.card-index{position:absolute;top:-18px;left:0;font-size:7px;color:var(--muted);transition:transform .6s var(--ease)}.photo-card:hover .card-index{transform:translateX(8px)}.photo-meta{display:flex;justify-content:space-between;gap:10px;padding:10px 0 0;color:var(--muted);font-size:7px}.photo-meta b{font-weight:400;color:var(--fg)}.archive-end{font-size:7px;color:var(--muted);margin:9vw 0 0;text-align:right}
+
+.project{background:var(--bg2);padding-top:12vh;padding-bottom:17vh;position:relative}.project-mark{display:flex;justify-content:space-between;align-items:center}.project-mark>span{font-size:7px;color:var(--muted)}.project-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:8vw;margin:7vw 0 8vw}.project-title h2{font-size:clamp(82px,15vw,220px);line-height:.72;letter-spacing:-.095em;font-weight:300;margin:0}.project-sub{margin-top:25px;color:var(--muted);font:9px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.12em}.project-text{align-self:end;max-width:490px;font-size:17px}.project-text .muted{color:var(--muted);margin-top:38px;font-size:13px}
+.project-image-wrap{max-width:770px;margin-left:auto}.project-image{position:relative;overflow:hidden;background:#050606}.project-image img{width:100%;display:block;aspect-ratio:2/3;object-fit:cover;filter:saturate(.7);transition:transform 1.4s var(--ease),filter 1.4s}.project-image-wrap:hover img{transform:scale(1.018);filter:saturate(.6)}.image-scan{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,transparent 47%,rgba(255,255,255,.045) 50%,transparent 53%,transparent 100%);transform:translateY(-100%);transition:transform 1.8s var(--ease);pointer-events:none}.project-image-wrap:hover .image-scan{transform:translateY(100%)}.image-word-overlay{position:absolute;left:5%;bottom:5%;font:8px "DM Mono",monospace;letter-spacing:.16em;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s}.project-image-wrap:hover .image-word-overlay{opacity:.7;transform:none}.project-image-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:7px;padding-top:10px}.project-quote{font:clamp(27px,4vw,58px)/1.02 Georgia,serif;letter-spacing:-.04em;max-width:760px;margin:7vw 0 0}
+
+/* PROJECTS — list / detail toggle */
+.project-list-view h2{font-size:clamp(65px,10vw,150px);line-height:.78;letter-spacing:-.08em;font-weight:300;margin:6vw 0 0}
+.project-list{list-style:none;margin:4vw 0 0;padding:0;border-top:1px solid var(--line);max-width:720px}
+.project-list-item{display:flex;align-items:center;gap:24px;width:100%;padding:26px 0;border:0;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left;color:inherit;transition:opacity .3s}
+.project-list-item:hover{opacity:.6}
+.project-list-index{font:9px "DM Mono",monospace;color:var(--muted);letter-spacing:.1em}
+.project-list-name{flex:1;font-size:clamp(28px,4vw,52px);letter-spacing:-.03em;font-weight:300}
+.project-list-arrow{font:14px "DM Mono",monospace;color:var(--muted);transition:transform .3s var(--ease)}
+.project-list-item:hover .project-list-arrow{transform:translateX(6px)}
+.project-back{display:inline-flex;align-items:center;gap:8px;border:0;background:none;cursor:pointer;color:inherit;font:9px "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase;padding:0;margin:6vw 0 3vw;opacity:.7;transition:opacity .25s}
+.project-back:hover{opacity:1}
+@media(max-width:760px){
+  .project-list-item{padding:20px 0;gap:14px}
+  .project-back{margin-top:11vh}
+}
+
+.about{padding-top:13vh;padding-bottom:18vh}.about-mark{font-size:7px;color:var(--muted)}.about-layout{display:grid;grid-template-columns:1fr 1fr;gap:8vw;margin-top:8vw}.about-layout h2{font-size:clamp(65px,10vw,145px);line-height:.78;letter-spacing:-.08em;font-weight:300;margin:0}.about-copy .large{font-size:clamp(29px,4.1vw,60px);line-height:1.01;letter-spacing:-.05em;margin:0 0 4vw}.about-copy p:not(.large){color:var(--muted);max-width:520px;font-size:14px}.about-line{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);margin-top:10vw;padding-top:13px;font:7px "DM Mono",monospace;letter-spacing:.12em;color:var(--muted)}.about-line span:not(:first-child){text-align:right}
+
+.contact{min-height:100svh;display:flex;flex-direction:column;padding-top:9vh;padding-bottom:4vh;position:relative;overflow:hidden}.contact-orbit{position:absolute;width:58vw;height:58vw;border:1px solid rgba(233,231,223,.07);border-radius:50%;right:-28vw;top:18vh;pointer-events:none}.contact-wrap{margin:auto 0;position:relative;z-index:2}.contact h2{font-size:clamp(85px,15vw,225px);line-height:.7;letter-spacing:-.095em;font-weight:300;margin:30px 0 65px}.contact-links{display:flex;flex-direction:column;gap:11px;font:10px "DM Mono",monospace}.contact-links a{width:min(520px,70vw);display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:8px;transition:border-color .3s}.contact-links a:hover{border-color:var(--fg)}.contact-links a span{color:var(--muted)}
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;margin-top:auto;padding-top:50px;color:var(--muted);font-size:7px}.footer-copyright{flex-basis:100%;opacity:.55;padding-top:10px;border-top:1px solid var(--line)}
+
+.viewer{position:fixed;inset:0;background:rgba(4,5,5,.982);backdrop-filter:blur(14px);z-index:220;display:none;align-items:center;justify-content:center;padding:7vh 9vw}.viewer.open{display:flex;animation:viewerIn .45s ease both}@keyframes viewerIn{from{opacity:0}to{opacity:1}}.viewer-top{position:absolute;left:4vw;right:4vw;top:28px;display:flex;justify-content:space-between;color:var(--muted);font-size:7px}.viewer figure{margin:0;max-height:88vh;max-width:72vw;text-align:center}.viewer-image-frame{overflow:hidden;max-height:80vh}.viewer img{display:block;max-width:100%;max-height:80vh;object-fit:contain;animation:imageIn .55s var(--ease) both;transition:opacity .62s ease}.viewer img.is-fading{opacity:0}@keyframes imageIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:scale(1)}}.viewer figcaption{display:flex;justify-content:center;gap:18px;font-size:8px;margin-top:13px;color:var(--muted)}.viewer figcaption strong{color:var(--fg);font-weight:400}.viewer button{position:absolute;background:none;border:0;cursor:pointer;font:inherit}.viewer-close{top:20px;right:3vw;font-size:28px}.viewer-prev{left:4vw;font-size:20px}.viewer-next{right:4vw;font-size:20px}
+
+.cursor,.cursor-dot{position:fixed;left:0;top:0;pointer-events:none;z-index:300;border-radius:50%;transform:translate3d(-100px,-100px,0)}.cursor{width:34px;height:34px;border:1px solid rgba(233,231,223,.65);margin:-17px;transition:width .25s,height .25s,margin .25s,opacity .25s}.cursor-dot{width:4px;height:4px;background:var(--fg);margin:-2px}.cursor-hover .cursor{width:54px;height:54px;margin:-27px;opacity:.75}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 1s ease,transform 1s var(--ease)}.reveal.in-view{opacity:1;transform:none}
+@media(pointer:coarse){.cursor,.cursor-dot{display:none}}
+@media(max-width:760px){
+  .nav{height:58px;padding:0 5vw}.nav nav{gap:14px}.nav-home{display:none}.nav nav a:nth-child(n+4){display:none}.nav-tools{gap:7px}.sound-toggle{font-size:7px}.sound-toggle #soundLabel{display:none}
+  main>section{padding-left:6vw;padding-right:6vw}
+  .intro-top,.intro-bottom{left:6vw;right:6vw}.intro-center{width:90vw}.intro-wordmark{font-size:22vw}.intro-pre{font-size:7px}.intro-origin{font-size:7px;margin:20px 0 34px}.enter-button{font-size:8px}
+  .hero{min-height:94svh;padding-top:11vh}.hero h1{font-size:19vw;margin:22vh 0 6vh}.hero-note{font-size:12px}.hero-coordinate{left:6vw}.f1{width:120px;height:180px;right:5%;top:12%}.f2{width:120px;height:180px;right:42%;bottom:7%}.f3{width:92px;height:140px;right:0;bottom:27%}.f4{display:none}.o1{width:90vw;height:90vw;right:-48vw;top:7vh}.o2{display:none}
+  .threshold{padding-top:12vh;padding-bottom:14vh}.threshold-top{align-items:flex-start}.micro{display:none}.threshold-body{grid-template-columns:1fr;gap:50px;margin-top:17vw}.statement{font-size:11vw}.threshold-side{display:grid;grid-template-columns:auto 1fr;align-items:center}.section-head{display:block}.section-head h2{font-size:18vw}.section-desc{margin-top:28px}.filters{gap:14px;overflow:auto;white-space:nowrap;margin:16vw 0 10vw}
+  .grid{grid-template-columns:repeat(2,1fr);gap:34px 10px}.photo-card,.photo-card.tall,.photo-card:nth-child(2),.photo-card:nth-child(3),.photo-card:nth-child(4),.photo-card:nth-child(5),.photo-card:nth-child(6),.photo-card:nth-child(7),.photo-card:nth-child(8){grid-column:span 1;margin-top:0}.photo-card:nth-child(3),.photo-card:nth-child(6),.photo-card:nth-child(8){margin-top:12vw}.photo-meta{display:block;line-height:1.6}.photo-meta b{display:block}.card-index{top:-14px}.archive-end{margin-top:16vw}
+  .project{padding-top:11vh}.project-mark>span{display:none}.project-layout,.about-layout{grid-template-columns:1fr;gap:55px;margin-top:15vw}.project-title h2{font-size:25vw}.project-text{font-size:16px}.project-quote{margin-top:9vw}.image-word-overlay{opacity:.55;transform:none}
+  .about-layout h2{font-size:19vw}.about-copy .large{font-size:10vw;margin-bottom:12vw}.about-copy p:not(.large){font-size:13px}.about-line{grid-template-columns:1fr 1fr;gap:14px;margin-top:18vw}.about-line span{text-align:left!important}
+  .contact h2{font-size:22vw}.contact-orbit{width:120vw;height:120vw;right:-72vw;top:21vh}.contact-links a{width:88vw}.viewer{padding:7vh 9vw}.viewer figure{max-width:90vw}.viewer-prev{left:3vw}.viewer-next{right:3vw}.viewer figcaption{gap:8px;font-size:7px}.viewer-top{left:6vw;right:6vw}
+  footer{display:grid;grid-template-columns:1fr 1fr;font-size:6px}footer span:last-child{grid-column:1/-1;margin-top:4px}.audio-readout{right:6vw;bottom:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}.float{animation:none}.photo-card,.reveal,.viewer img{transition:none;animation:none}.floating-stage,.project-image img,.photo-card img,.intro-image img{transition:none;animation:none}
+}
+/* V05 reactive layer */
+:root{--scroll-energy:0;--sound-temperature:.15}.ambient{transition:filter 1.8s ease,opacity 1.8s ease;opacity:calc(.7 + var(--scroll-energy)*.3);filter:blur(calc(50px + var(--scroll-energy)*18px))}.hero .floating-stage{will-change:transform}.project-image:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(circle at 55% 42%,rgba(92,108,103,calc(.035 + var(--sound-temperature)*.03)),transparent 48%);mix-blend-mode:screen}.photo-card:hover{transform:translateY(calc(var(--scroll-energy) * -2px))}.viewer.open .viewer-image-frame{box-shadow:0 0 calc(70px + var(--scroll-energy)*30px) rgba(90,100,95,.06)}@media(prefers-reduced-motion:reduce){.ambient{transition:none}.photo-card:hover{transform:none}}
+
+/* =========================================================
+   V05.1 — YEVEON ATMOSPHERIC BACKGROUNDS + SCROLL MOTION
+   ========================================================= */
+
+/* The background is deliberately NOT pure black. It is a living
+   field of desaturated olive / sand / petroleum tones. */
+body{
+  background:#171916;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:-15%;
+  z-index:-5;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(91,101,78,.28), transparent 28%),
+    radial-gradient(circle at 78% 20%, rgba(53,74,70,.24), transparent 30%),
+    radial-gradient(circle at 52% 78%, rgba(129,116,91,.18), transparent 34%),
+    linear-gradient(125deg,#171916 0%,#20241e 42%,#182220 72%,#151715 100%);
+  filter:blur(25px);
+  transform:translate3d(0,0,0);
+  animation:yeveonBreath 18s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-4;
+  pointer-events:none;
+  opacity:.22;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(210,200,178,.08) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 80% 70%, rgba(210,200,178,.05) 0 1px, transparent 1.5px);
+  background-size:37px 41px,53px 47px;
+  mix-blend-mode:screen;
+  animation:yeveonDust 24s linear infinite;
+}
+@keyframes yeveonBreath{
+  0%{transform:translate3d(-2%,0,0) scale(1)}
+  50%{transform:translate3d(1.5%,-1%,0) scale(1.04)}
+  100%{transform:translate3d(2%,1.5%,0) scale(1.08)}
+}
+@keyframes yeveonDust{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-25px,18px,0)}
+}
+
+/* Atmospheric bands: every major section gets a different emotional
+   temperature while remaining within the same Yeveon universe. */
+#archive{
+  position:relative;
+  background:
+    radial-gradient(ellipse at 18% 20%,rgba(84,101,75,.24),transparent 36%),
+    radial-gradient(ellipse at 82% 72%,rgba(57,78,73,.20),transparent 40%);
+}
+#archive::before,
+#project::before,
+#about::before,
+#contact::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+}
+#project{
+  position:relative;
+  background:
+    radial-gradient(ellipse at 72% 22%,rgba(63,83,79,.30),transparent 38%),
+    radial-gradient(ellipse at 25% 80%,rgba(120,111,88,.16),transparent 40%);
+}
+/* V07.13 — real bug fix, not just a tuning pass: #about (and #contact,
+   same pattern) never had isolation:isolate, unlike .threshold/#archive
+   /.project which do. Without it, any z-index:-1 decorative child
+   (#about::before's tint, .about-droplets) escapes this section's own
+   stacking and ends up painted BEHIND #about's own background instead
+   of just behind its text — invisible despite otherwise-correct CSS.
+   This is why Andrea couldn't see the V07.12 About tint or droplets at
+   all. Isolating both sections keeps their z-index:-1 layers local, the
+   same way .threshold already works. */
+/* V07.14 — second real bug, same family: #about was still missing
+   overflow:hidden (unlike .threshold/#archive/.project, which all pair
+   isolation:isolate WITH overflow:hidden — #contact already gets this
+   for free from the separate .contact class rule below, which is why
+   only About showed the problem). Without it, isolation:isolate fixes
+   the *stacking order* but does nothing to *clip* — a child with a
+   negative inset (#about::before at -20%, the dust layer at -10%) still
+   paints past the section's own top/bottom edge, bleeding visually into
+   whatever section sits above/below. That's why the dust layer showed
+   up over the tail end of the YEVEON/Projects section: About has no
+   space above it (Projects ends exactly where About begins), so the
+   overflowing top edge of the dust layer landed on Projects' own
+   content. Added overflow:hidden here to contain everything to About's
+   own box, same pairing already proven on the other three sections. */
+#about{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 28% 35%,rgba(113,105,83,.22),transparent 34%),
+    radial-gradient(ellipse at 86% 78%,rgba(70,87,71,.17),transparent 42%);
+}
+#contact{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 55% 42%,rgba(58,75,72,.24),transparent 42%),
+    radial-gradient(ellipse at 10% 85%,rgba(106,101,79,.13),transparent 38%);
+}
+
+/* Animated light pools follow scroll position through --scroll-energy. */
+#archive::after,#project::after,#about::after,#contact::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(circle at calc(25% + var(--scroll-energy)*15%) calc(20% + var(--scroll-energy)*10%),rgba(195,184,153,.07),transparent 18%),
+    radial-gradient(circle at calc(75% - var(--scroll-energy)*12%) calc(75% - var(--scroll-energy)*9%),rgba(91,113,103,.08),transparent 24%);
+  filter:blur(40px);
+  transition:transform 1.8s cubic-bezier(.2,.65,.2,1);
+}
+
+/* Section transition markers: a faint atmospheric veil between worlds. */
+.section{
+  isolation:isolate;
+  transition:background-position 2s ease, filter 1.5s ease;
+}
+.section.in-view{
+  filter:saturate(calc(1 + var(--scroll-energy)*.12));
+}
+
+/* Make existing reveal classes visibly move instead of simply appearing. */
+.reveal{
+  opacity:0;
+  transform:translate3d(0,38px,0) scale(.985);
+  filter:blur(5px);
+  transition:opacity 1.2s cubic-bezier(.16,1,.3,1),
+             transform 1.5s cubic-bezier(.16,1,.3,1),
+             filter 1.2s ease;
+}
+.reveal.in-view{
+  opacity:1;
+  transform:none;
+  filter:none;
+}
+
+/* Archive cards float at slightly different depths while scrolling. */
+.photo-card{
+  will-change:transform;
+  transition:
+    opacity .8s ease,
+    transform 1.2s cubic-bezier(.16,1,.3,1),
+    filter .8s ease;
+}
+.photo-card:nth-child(3n+1){--float-depth:7px}
+.photo-card:nth-child(3n+2){--float-depth:-4px}
+.photo-card:nth-child(3n){--float-depth:3px}
+.photo-card.in-view{transform:translate3d(0,var(--float-depth),0)}
+.photo-card:hover{transform:translate3d(0,calc(var(--float-depth) - 8px),0) scale(1.008)}
+.photo-card img{transition:transform 1.5s cubic-bezier(.16,1,.3,1),filter 1s ease}
+.photo-card:hover img{transform:scale(1.025);filter:saturate(.86) contrast(.98)}
+
+/* Intro has a moving light field too. */
+#intro{
+  background:
+    radial-gradient(circle at 52% 42%,rgba(108,115,93,.16),transparent 24%),
+    radial-gradient(circle at 20% 80%,rgba(49,69,66,.14),transparent 30%),
+    #151714;
+}
+#intro::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 55% 45%,rgba(177,166,138,.10),transparent 18%),
+    radial-gradient(circle at 25% 65%,rgba(72,91,83,.12),transparent 24%);
+  filter:blur(45px);
+  animation:introAtmosphere 11s ease-in-out infinite alternate;
+}
+@keyframes introAtmosphere{
+  from{transform:translate3d(-3%,2%,0) scale(1)}
+  to{transform:translate3d(4%,-3%,0) scale(1.08)}
+}
+
+/* Floating image/text relationship in the hero. */
+.floating-stage{
+  transition:transform 1.4s cubic-bezier(.16,1,.3,1);
+}
+.float{
+  will-change:transform;
+  transition:transform 1.2s cubic-bezier(.16,1,.3,1);
+}
+
+/* Mobile: remove cursor-only behavior but retain cinematic movement. */
+@media(max-width:760px){
+  body::before{inset:-30%;filter:blur(18px);animation-duration:24s}
+  body::after{opacity:.14}
+  .reveal{transform:translate3d(0,22px,0);filter:blur(3px)}
+  .photo-card.in-view{transform:translate3d(0,3px,0)}
+  .photo-card:hover{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  body::before,body::after,#intro::before{animation:none}
+  .reveal{transition:opacity .4s ease}
+  .photo-card,.photo-card img,.float,.floating-stage{transition:none}
+}
+
+/* =========================================================
+   V05.9 — VISIBLE ATMOSPHERIC WORLDS
+   Deliberately stronger than V05.4 while remaining desaturated.
+   ========================================================= */
+#archive{
+  position:relative !important;
+  isolation:isolate !important;
+  overflow:hidden !important;
+  background:#121513 !important;
+  transition:background 2s ease !important;
+}
+#archive > *:not(.world-field):not(.world-waves):not(.world-grain):not(.world-glow){
+  position:relative;
+  z-index:2;
+}
+#archive > .world-field,
+#archive > .world-waves,
+#archive > .world-grain,
+#archive > .world-glow{
+  position:absolute !important;
+  pointer-events:none !important;
+  display:block !important;
+}
+#archive > .world-field{
+  inset:-35% !important;
+  z-index:0 !important;
+  filter:blur(45px);
+  opacity:1 !important;
+  transform:translate3d(calc(var(--archive-x,0px)),calc(var(--archive-y,0px)),0) scale(1.08);
+  background:
+    radial-gradient(ellipse 36% 24% at 15% 25%,rgba(120,140,103,.34),transparent 70%),
+    radial-gradient(ellipse 34% 26% at 80% 72%,rgba(47,90,80,.34),transparent 70%),
+    radial-gradient(ellipse 30% 20% at 53% 45%,rgba(196,183,145,.10),transparent 70%);
+  animation:yeveonFieldMove 14s ease-in-out infinite alternate;
+}
+#archive > .world-waves{
+  inset:-30% !important;
+  z-index:0 !important;
+  opacity:.55 !important;
+  background:
+    radial-gradient(ellipse 42% 15% at 50% 48%,transparent 57%,rgba(215,207,182,.08) 58%,transparent 61%),
+    radial-gradient(ellipse 58% 20% at 50% 48%,transparent 65%,rgba(215,207,182,.055) 66%,transparent 69%),
+    radial-gradient(ellipse 74% 27% at 50% 48%,transparent 73%,rgba(215,207,182,.04) 74%,transparent 77%);
+  transform:scale(calc(1 + var(--page-progress,0)*.14));
+  animation:yeveonWaves 12s ease-in-out infinite;
+}
+#archive > .world-grain{
+  inset:-10% !important;
+  z-index:1 !important;
+  opacity:.20 !important;
+  background-image:
+    radial-gradient(circle,rgba(235,228,205,.28) 0 1px,transparent 1.3px),
+    radial-gradient(circle,rgba(235,228,205,.16) 0 1px,transparent 1.2px);
+  background-size:61px 67px,113px 127px;
+  mix-blend-mode:screen;
+  animation:yeveonGrain 18s linear infinite;
+}
+#archive > .world-glow{
+  width:42vw !important;
+  height:16vw !important;
+  left:-45vw !important;
+  top:28% !important;
+  z-index:1 !important;
+  border-radius:50% !important;
+  filter:blur(30px) !important;
+  opacity:.65 !important;
+  background:linear-gradient(90deg,transparent,rgba(218,204,165,.12),transparent) !important;
+  transform:rotate(-16deg) !important;
+  animation:yeveonGlow 13s cubic-bezier(.4,0,.2,1) infinite !important;
+}
+@keyframes yeveonFieldMove{
+  from{margin-left:-2%;margin-top:1%}
+  to{margin-left:3%;margin-top:-3%}
+}
+@keyframes yeveonWaves{
+  0%,100%{transform:scale(1) rotate(-1deg);opacity:.25}
+  50%{transform:scale(1.13) rotate(1deg);opacity:.55}
+}
+@keyframes yeveonGrain{
+  from{background-position:0 0,0 0}
+  to{background-position:-61px 67px,113px -127px}
+}
+@keyframes yeveonGlow{
+  0%{left:-45vw;opacity:0}
+  12%{opacity:.7}
+  55%{left:48vw;opacity:.35}
+  88%{opacity:.55}
+  100%{left:125vw;opacity:0}
+}
+
+/* Explicit world palettes. */
+#archive.atmo-all{
+  background:
+    radial-gradient(ellipse 70% 65% at 18% 22%,rgba(102,116,91,.18),transparent 70%),
+    radial-gradient(ellipse 60% 60% at 80% 75%,rgba(44,70,65,.18),transparent 70%),
+    #151816 !important;
+}
+#archive.atmo-landscape{
+  background:
+    radial-gradient(ellipse 72% 62% at 18% 20%,rgba(105,126,84,.36),transparent 69%),
+    radial-gradient(ellipse 62% 70% at 84% 74%,rgba(34,83,73,.36),transparent 70%),
+    linear-gradient(145deg,#111713,#26372e 48%,#12201e) !important;
+}
+#archive.atmo-landscape > .world-field{
+  background:
+    radial-gradient(ellipse 36% 22% at 17% 29%,rgba(163,169,128,.25),transparent 70%),
+    radial-gradient(ellipse 34% 22% at 80% 68%,rgba(49,104,89,.35),transparent 70%);
+}
+#archive.atmo-urban{
+  background:
+    radial-gradient(ellipse 42% 38% at 82% 21%,rgba(145,88,49,.19),transparent 70%),
+    radial-gradient(ellipse 60% 65% at 20% 76%,rgba(65,72,71,.30),transparent 70%),
+    linear-gradient(135deg,#090b0b,#202323 50%,#0c0f0f) !important;
+}
+#archive.atmo-urban > .world-field{
+  background:
+    linear-gradient(105deg,transparent 0 42%,rgba(171,101,54,.10) 49%,transparent 56%),
+    radial-gradient(ellipse 18% 10% at 79% 24%,rgba(193,119,65,.18),transparent 70%);
+}
+#archive.atmo-urban > .world-waves{
+  opacity:.32 !important;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 125px,rgba(215,210,198,.055) 126px 127px),
+    repeating-linear-gradient(0deg,transparent 0 76px,rgba(215,210,198,.04) 77px 78px);
+  animation:yeveonUrbanGrid 20s linear infinite;
+}
+@keyframes yeveonUrbanGrid{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-80px,52px,0)}
+}
+#archive.atmo-liminal{
+  background:
+    radial-gradient(ellipse 62% 54% at 50% 28%,rgba(157,145,96,.34),transparent 69%),
+    radial-gradient(ellipse 48% 62% at 13% 82%,rgba(89,82,59,.34),transparent 70%),
+    linear-gradient(145deg,#0d0e0c,#2b281f 49%,#10110f) !important;
+}
+#archive.atmo-liminal > .world-field{
+  background:
+    radial-gradient(ellipse 28% 18% at 47% 33%,rgba(210,193,137,.22),transparent 70%),
+    radial-gradient(ellipse 34% 20% at 74% 74%,rgba(129,114,70,.20),transparent 70%);
+}
+#archive.atmo-astro{
+  background:
+    radial-gradient(ellipse 58% 62% at 54% 20%,rgba(43,70,94,.40),transparent 68%),
+    radial-gradient(ellipse 56% 72% at 84% 78%,rgba(20,43,61,.38),transparent 70%),
+    linear-gradient(145deg,#030608,#0c1924 48%,#030608) !important;
+}
+#archive.atmo-astro > .world-field{
+  background:
+    radial-gradient(ellipse 34% 25% at 53% 22%,rgba(76,105,132,.22),transparent 70%),
+    radial-gradient(ellipse 25% 20% at 77% 70%,rgba(40,71,96,.24),transparent 70%);
+}
+#archive.atmo-astro > .world-grain{
+  opacity:.48 !important;
+  background-image:
+    radial-gradient(circle,rgba(246,247,241,.90) 0 1px,transparent 1.4px),
+    radial-gradient(circle,rgba(219,229,232,.72) 0 .8px,transparent 1.2px),
+    radial-gradient(circle,rgba(255,255,250,.50) 0 .7px,transparent 1.1px);
+  background-size:37px 41px,67px 79px,109px 127px;
+  animation:yeveonStarDrift 30s linear infinite;
+}
+@keyframes yeveonStarDrift{
+  from{background-position:0 0,0 0,0 0}
+  to{background-position:-37px 28px,67px -38px,-109px 59px}
+}
+
+@media(max-width:760px){
+  #archive > .world-field{filter:blur(28px)}
+  #archive > .world-glow{width:70vw;height:28vw;filter:blur(22px) !important}
+  #archive > .world-waves{opacity:.38 !important}
+}
+
+/* V06 — remove image preview on the "Luoghi" hover interaction.
+   The textual navigation remains; only the decorative image preview is disabled. */
+[data-location-preview],
+.location-preview,
+.place-preview,
+.hover-location-image,
+[data-hover-image="location"],
+[data-hover="location-image"]{
+  display:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* =========================================================
+   V07 — BRAND + CINEMATIC ARCHIVE
+   ========================================================= */
+.brand-copy{
+  margin:1.25rem auto 1.8rem;
+  text-align:center;
+  max-width:620px;
+  position:relative;
+  z-index:5;
+}
+.brand-tagline{
+  font-family:inherit;
+  font-size:clamp(1rem,1.45vw,1.25rem);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  opacity:.82;
+}
+.brand-alias{
+  margin-top:.55rem;
+  font-size:clamp(.72rem,1vw,.86rem);
+  letter-spacing:.055em;
+  opacity:.50;
+  font-style:italic;
+}
+
+/* Archive intro phrases */
+.archive-category-intros{
+  position:relative;
+  z-index:4;
+  min-height:clamp(220px,34vh,430px);
+  display:grid;
+  place-items:center;
+  padding:10vh 7vw 7vh;
+  pointer-events:none;
+}
+.archive-category-intro{
+  grid-area:1/1;
+  max-width:820px;
+  text-align:center;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(26px);
+  filter:blur(10px);
+  transition:
+    opacity 1.1s cubic-bezier(.2,.7,.2,1),
+    transform 1.25s cubic-bezier(.16,1,.3,1),
+    filter 1.25s cubic-bezier(.16,1,.3,1),
+    visibility 0s linear 1.25s;
+}
+.archive-category-intro.is-active{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+  filter:blur(0);
+  transition:
+    opacity 1.1s cubic-bezier(.2,.7,.2,1),
+    transform 1.25s cubic-bezier(.16,1,.3,1),
+    filter 1.25s cubic-bezier(.16,1,.3,1);
+}
+.archive-kicker{
+  display:block;
+  margin-bottom:1.1rem;
+  font-size:.62rem;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  opacity:.48;
+}
+.archive-quote{
+  margin:0;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(1.35rem,3.1vw,2.8rem);
+  line-height:1.18;
+  letter-spacing:-.015em;
+  font-weight:400;
+  text-wrap:balance;
+}
+
+@media(max-width:760px){
+  .brand-copy{margin-top:.9rem;margin-bottom:1.2rem}
+  .brand-tagline{font-size:.82rem;letter-spacing:.12em}
+  .brand-alias{font-size:.68rem}
+  .archive-category-intros{min-height:280px;padding:10vh 8vw 8vh}
+  .archive-quote{font-size:1.55rem}
+}
+
+/* V07.1 — Visual Archive intro placement:
+   Visual Archive title → category controls → phrase → photography. */
+#archive .archive-category-intros{
+  min-height:clamp(150px,22vh,250px);
+  padding:4vh 7vw 3vh;
+  margin:0;
+}
+#archive .archive-category-intro{
+  width:100%;
+}
+#archive .archive-category-intro .archive-kicker{
+  margin-bottom:.7rem;
+}
+#archive .archive-category-intro .archive-quote{
+  max-width:820px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* V07.2 — all category title phrases share Landscape's exact layout */
+#archive .archive-category-intros{
+  display:grid !important;
+  place-items:center !important;
+  position:relative !important;
+  width:100% !important;
+}
+#archive .archive-category-intro{
+  grid-area:1 / 1 !important;
+  width:min(820px,86vw) !important;
+  margin:0 auto !important;
+  text-align:center !important;
+}
+#archive .archive-category-intro .archive-kicker,
+#archive .archive-category-intro .archive-quote{
+  display:block !important;
+}
+
+/* =========================================================
+   V07.8/V07.9 — PROJECT SECTION ATMOSPHERE
+   Two distinct atmospheres, crossfaded via .project.detail-open
+   (toggled in script.js):
+   - .project-glow (default / project LIST view): stays close to
+     black, as requested, but reads as glass rather than flat —
+     soft moving "bagliori" (light blooms, blurred/misted) plus a
+     slow diagonal glass-reflection sheen.
+   - .project-wave (YEVEON DETAIL view only): a fuller, more visible
+     and more cinematic colour cycle across the same desaturated
+     family used in the YEVEON photos themselves — grey, olive
+     green, petrol green, desaturated blue, dull mustard, sand —
+     never vivid. .project-fog (dust/fog texture) is layered on top,
+     made clearly visible per feedback (V07.8's version was too
+     subtle to notice).
+   Follows the same "decorative layers prepended via JS, positioned
+   behind the real content" pattern already used for #archive's
+   .world-field/.world-waves/.world-grain/.world-glow (see script.js).
+   ========================================================= */
+.project{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.project > *:not(.project-glow):not(.project-wave):not(.project-fog):not(.project-koa-sparkle){
+  position:relative;
+  z-index:2;
+}
+.project > .project-glow,
+.project > .project-wave,
+.project > .project-fog{
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+}
+/* List view: black + glass. A near-black base, 3 soft blurred light
+   blooms drifting independently ("bagliori... leggermente appannati
+   che si muovono"), plus a slow diagonal sheen crossing the section
+   like a reflection sliding across glass. */
+.project > .project-glow{
+  inset:-20%;
+  background:
+    radial-gradient(ellipse 16% 18% at 22% 26%, rgba(232,230,216,.44), transparent 72%),
+    radial-gradient(ellipse 13% 15% at 78% 62%, rgba(186,210,212,.38), transparent 74%),
+    radial-gradient(ellipse 15% 17% at 52% 88%, rgba(224,212,182,.30), transparent 74%),
+    linear-gradient(160deg,#07080a 0%,#0c0e0f 55%,#08090a 100%);
+  filter:blur(26px);
+  animation:projectBlooms 30s ease-in-out infinite alternate;
+  transition:opacity 1.6s ease;
+}
+.project > .project-glow::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(115deg,transparent 34%,rgba(255,255,255,.10) 47%,rgba(255,255,255,.22) 50%,rgba(255,255,255,.10) 53%,transparent 66%);
+  background-size:320% 320%;
+  background-position:-60% -60%;
+  mix-blend-mode:screen;
+  animation:projectGlassSheen 16s ease-in-out infinite;
+}
+.project.detail-open > .project-glow{opacity:0}
+/* YEVEON detail view: the fuller, cinematic, desaturated colour cycle. */
+/* Five colour blobs (grey, olive, petrol, blue, mustard/sand), each its
+   own background layer with its own background-position keyframes —
+   not a single shared transform — so they drift independently and
+   cross each other, actually mixing colour over time instead of
+   moving as one rigid, visually-static group. */
+.project > .project-wave{
+  inset:-24%;
+  opacity:0;
+  background-repeat:no-repeat;
+  background-size:64% 60%,60% 58%,66% 62%,58% 56%,52% 50%;
+  background-position:14% 18%,84% 14%,80% 82%,16% 84%,50% 48%;
+  background-image:
+    radial-gradient(ellipse closest-side, rgba(140,144,132,.60), transparent 72%),
+    radial-gradient(ellipse closest-side, rgba(98,120,70,.55), transparent 72%),
+    radial-gradient(ellipse closest-side, rgba(40,82,76,.62), transparent 74%),
+    radial-gradient(ellipse closest-side, rgba(56,86,112,.52), transparent 74%),
+    radial-gradient(ellipse closest-side, rgba(150,128,68,.40), transparent 76%);
+  filter:blur(44px);
+  animation:yeveonWaveShift 34s ease-in-out infinite;
+  transition:opacity 1.8s ease;
+}
+.project.detail-open > .project-wave{opacity:1}
+.project > .project-fog{
+  inset:-24%;
+  opacity:0;
+  background-image:
+    radial-gradient(circle,rgba(224,218,196,.32) 0 2.2px,transparent 2.8px),
+    radial-gradient(circle,rgba(224,218,196,.22) 0 1.8px,transparent 2.4px),
+    radial-gradient(circle,rgba(224,218,196,.16) 0 1.4px,transparent 2px);
+  background-size:170px 190px,270px 240px,380px 330px;
+  filter:blur(1px);
+  mix-blend-mode:screen;
+  animation:projectFogDrift 40s linear infinite;
+  transition:opacity 2s ease;
+}
+.project.detail-open > .project-fog{opacity:.85}
+@keyframes projectBlooms{
+  0%{transform:translate3d(-2%,-1%,0) scale(1.05) rotate(0deg)}
+  50%{transform:translate3d(2.5%,2%,0) scale(1.12) rotate(1.5deg)}
+  100%{transform:translate3d(-1.5%,3%,0) scale(1.08) rotate(-1deg)}
+}
+@keyframes projectGlassSheen{
+  0%,100%{background-position:-60% -60%}
+  50%{background-position:160% 160%}
+}
+@keyframes yeveonWaveShift{
+  0%{background-position:14% 18%,84% 14%,80% 82%,16% 84%,50% 48%}
+  20%{background-position:38% 8%,60% 34%,88% 56%,30% 62%,68% 20%}
+  40%{background-position:70% 26%,24% 12%,58% 88%,54% 30%,20% 66%}
+  60%{background-position:82% 62%,44% 78%,20% 60%,80% 18%,46% 84%}
+  80%{background-position:30% 74%,78% 52%,42% 20%,18% 40%,74% 46%}
+  100%{background-position:14% 18%,84% 14%,80% 82%,16% 84%,50% 48%}
+}
+@keyframes projectFogDrift{
+  from{background-position:0 0,0 0,0 0}
+  to{background-position:-260px 190px,300px -230px,-420px 260px}
+}
+@media(max-width:760px){
+  .project > .project-glow{filter:blur(24px)}
+  .project > .project-wave{filter:blur(30px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .project > .project-glow,
+  .project > .project-glow::after,
+  .project > .project-wave,
+  .project > .project-fog{animation:none}
+}
+
+/* =========================================================
+   V07.16 — KOA KI MEIRU detail background: an ethereal variant of the
+   YEVEON detail atmosphere above, requested as slow-moving light
+   blooms + twinkling glints + gentle wave-like drift, in gold / olive
+   green / navy blue / white — the site's existing palette, shifted
+   warmer for this project.
+   Reuses .project-wave (colours only, via a higher-specificity
+   override below — .project-glow/.project-fog and every animation/
+   transition/blur/opacity rule above stay completely untouched, so
+   YEVEON's own background is unaffected) for the slow drifting glow +
+   wave motion, and adds one new layer, .project-koa-sparkle (many
+   individually-randomised .koa-mote elements, script.js), for the
+   twinkling points of light — same "many independent elements, not a
+   repeating pattern" idiom as .dust-mote/.threshold-mote, reusing their
+   shared dustFloat keyframe without touching it.
+   ========================================================= */
+.project.detail-project-koa-ki-meiru > .project-wave{
+  background-size:60% 56%,66% 62%,58% 54%,70% 64%,50% 48%;
+  background-position:16% 20%,82% 16%,78% 80%,18% 82%,50% 46%;
+  background-image:
+    radial-gradient(ellipse closest-side, rgba(201,162,39,.55), transparent 72%),
+    radial-gradient(ellipse closest-side, rgba(139,148,110,.50), transparent 72%),
+    radial-gradient(ellipse closest-side, rgba(27,42,74,.62), transparent 74%),
+    radial-gradient(ellipse closest-side, rgba(239,233,218,.34), transparent 76%),
+    radial-gradient(ellipse closest-side, rgba(216,184,74,.40), transparent 76%);
+}
+/* .project-fog is YEVEON's fixed-size tiled dust pattern (three repeating
+   background-image dot grids, defined above) — exactly the kind of
+   "regular/geometric" texture Andrea already asked to have replaced twice
+   (About in V07.14, Threshold in V07.15). It stays untouched for YEVEON
+   (already shipped, never flagged there), but is switched off for KOA KI
+   MEIRU so its tiled grid doesn't show through alongside the new organic
+   .project-koa-sparkle motes above — avoids repeating the same "too
+   geometric" issue on this new project from the start. */
+.project.detail-project-koa-ki-meiru > .project-fog{opacity:0}
+.project-koa-sparkle{
+  /* position:fixed (not absolute like .project-wave/.project-fog above):
+     .project is much taller than one screen once KOA's detail view and
+     its 12-photo gallery are open, so an absolutely-positioned layer
+     sized to inset:0 would inherit that whole (multi-thousand-pixel)
+     height and scatter its individually-positioned motes across it —
+     most of them would sit far below the fold, never on screen. Fixed
+     positioning keeps this layer's 0-100% coordinate space equal to the
+     actual viewport, so the "scintillii" stay visibly on screen and
+     drift there as Andrea asked ("si muovono lentamente lungo la
+     schermata"), for as long as any part of the (still overflow:hidden)
+     .project section is scrolled into view — not just at the very top.
+     .project-wave/.project-fog are untouched (still absolute), keeping
+     YEVEON's existing behaviour exactly as shipped. */
+  position:fixed;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1.8s ease;
+}
+.project.detail-project-koa-ki-meiru > .project-koa-sparkle{opacity:1}
+.koa-mote{
+  position:absolute;
+  left:var(--dust-x);
+  top:var(--dust-y);
+  width:var(--dust-size);
+  height:var(--dust-size);
+  border-radius:50%;
+  background:var(--dust-color);
+  filter:blur(var(--dust-blur));
+  opacity:var(--dust-op-base);
+  animation:dustFloat var(--dust-dur) ease-in-out infinite;
+  animation-delay:var(--dust-delay);
+  mix-blend-mode:screen;
+}
+@media(max-width:760px){
+  .project.detail-project-koa-ki-meiru > .project-wave{filter:blur(30px)}
+  .project.detail-project-koa-ki-meiru > .project-koa-sparkle{opacity:.7}
+}
+@media(prefers-reduced-motion:reduce){
+  .koa-mote{animation:none}
+}
+
+/* =========================================================
+   V07.8 — YEVEON PROJECT GALLERY
+   Free-form (non-grid) arrangement of photos and short editorial
+   phrases, generated by buildProjectGallery() in script.js from
+   DATA.project.gallery (content.js). Position/size/rotation per item
+   is set with the gallery-pos-N classes below rather than nth-child,
+   since photos and phrases are mixed in one list. Photos get a gentle
+   idle float + scale breathing and a slow shimmer sweep; phrases reuse
+   the site's existing .reveal fade/blur-in (the "reverse dissolve").
+   ========================================================= */
+.project-gallery{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:clamp(18px,3vw,46px);
+  margin:9vw auto 11vw;
+  max-width:980px;
+}
+.gallery-photo{
+  position:relative;
+  overflow:hidden;
+  background:#050606;
+  animation:galleryFloat var(--gf-dur,10s) ease-in-out infinite;
+  animation-delay:var(--gf-delay,0s);
+  will-change:transform;
+}
+.gallery-photo-btn{display:block;width:100%;border:0;background:none;padding:0;margin:0;cursor:pointer;font:inherit}
+.gallery-photo img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover;filter:saturate(.68) contrast(.98)}
+.gallery-photo::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(233,231,223,.16) 48%,transparent 62%);
+  background-size:260% 260%;
+  background-position:-40% -40%;
+  mix-blend-mode:screen;
+  opacity:.5;
+  animation:galleryShimmer var(--gs-dur,7s) ease-in-out infinite;
+  animation-delay:var(--gs-delay,0s);
+}
+.gallery-photo-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:7px;padding-top:10px;font-family:"DM Mono",monospace;letter-spacing:.1em;text-transform:uppercase;margin:0}
+.gallery-phrase{
+  max-width:640px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(1.3rem,2.6vw,2.1rem);
+  line-height:1.28;
+  letter-spacing:-.01em;
+  margin:0;
+}
+@keyframes galleryFloat{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(0,-10px,0) scale(1.012)}
+}
+@keyframes galleryShimmer{
+  0%,100%{background-position:-40% -40%}
+  50%{background-position:140% 140%}
+}
+
+.gallery-pos-1{align-self:flex-start;width:min(62%,540px);--gf-dur:9.5s;--gf-delay:0s;--gs-dur:8s;--gs-delay:0s}
+.gallery-pos-2{align-self:flex-end;width:min(52%,440px);margin-top:-1vw;--gf-dur:11s;--gf-delay:-3s;--gs-dur:9s;--gs-delay:-2s}
+.gallery-pos-3{align-self:center;text-align:center;margin:.5vw auto}
+.gallery-pos-4{align-self:flex-start;width:min(56%,470px);margin-left:5%;--gf-dur:10s;--gf-delay:-5s;--gs-dur:7.5s;--gs-delay:-4s}
+.gallery-pos-5{align-self:flex-end;width:min(46%,390px);margin-top:.5vw;--gf-dur:9s;--gf-delay:-1.5s;--gs-dur:8.5s;--gs-delay:-1s}
+.gallery-pos-6{align-self:flex-end;text-align:right;max-width:520px}
+.gallery-pos-7{align-self:center;width:min(66%,560px);--gf-dur:10.5s;--gf-delay:-4s;--gs-dur:9.5s;--gs-delay:-3s}
+.gallery-pos-8{align-self:flex-start;width:min(50%,420px);margin-top:-1vw;--gf-dur:9.8s;--gf-delay:-2.5s;--gs-dur:7s;--gs-delay:-5s}
+.gallery-pos-9{align-self:center;text-align:center}
+
+/* V07.18 — Andrea ha chiesto di ravvicinare anche le foto di YEVEON, come
+   già fatto per KOA KI MEIRU in V07.17, mantenendo le frasi editoriali
+   esattamente dove sono oggi (nel mezzo della galleria). In content.js le
+   foto arrivano sempre a coppie tra una frase e l'altra: ogni coppia viene
+   ora raggruppata (in script.js, buildProjectGallery) in un contenitore
+   .gallery-photo-group, una piccola griglia a 2 colonne, invece che come
+   due foto singole impilate con margini/allineamenti diversi (le vecchie
+   gallery-pos-1/2/4/5/7/8). Le frasi (gallery-pos-3/6/9) restano fuori da
+   questo contenitore e non sono toccate in alcun modo. */
+.gallery-photo-group{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(14px,2.2vw,30px);
+}
+.gallery-photo-group .gallery-photo{width:auto;margin:0}
+/* variazione dei tempi di float/shimmer tra le due foto della coppia e tra
+   una coppia e l'altra, così non respirano/scintillano tutte in sincrono
+   (prima questa variazione veniva dalle classi gallery-pos-N) */
+.gallery-photo-group .gallery-photo:nth-child(2){
+  margin-top:clamp(18px,3vw,40px);
+  --gf-dur:11s;--gf-delay:-3s;--gs-dur:9s;--gs-delay:-2s;
+}
+.gallery-photo-group:nth-of-type(2n) .gallery-photo:nth-child(1){
+  --gf-dur:10s;--gf-delay:-5s;--gs-dur:7.5s;--gs-delay:-4s;
+}
+.gallery-photo-group:nth-of-type(2n) .gallery-photo:nth-child(2){
+  --gf-dur:9.8s;--gf-delay:-2.5s;--gs-dur:7s;--gs-delay:-5s;
+}
+
+@media(max-width:760px){
+  .project-gallery{gap:26px;margin-top:14vw}
+  .gallery-photo{width:100% !important;align-self:center !important;margin:0 !important}
+  .gallery-phrase{max-width:100%;font-size:1.15rem;text-align:left !important}
+  .gallery-photo-group{grid-template-columns:1fr;gap:26px}
+  .gallery-photo-group .gallery-photo:nth-child(2){margin-top:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .gallery-photo,.gallery-photo::after{animation:none}
+}
+
+/* =========================================================
+   V07.17 — KOA KI MEIRU: griglia più fitta e raggruppata
+   ========================================================= */
+/* Andrea (V07.16 feedback): le foto di KOA KI MEIRU devono stare più
+   raggruppate tra loro, senza immagini esageratamente grandi, "un po'
+   come nelle sezioni visual archive o yeveon". La galleria di YEVEON
+   sopra (.project-gallery/.gallery-pos-N) è un layout libero a colonna
+   singola pensato per alternare foto e frasi (resta intatto, non
+   tocco nulla di quanto sopra): la galleria di KOA contiene solo foto,
+   quindi qui passa a una griglia multi-colonna in stile Archive
+   (.grid), agganciata solo all'id #projectGalleryKoa (più specifico
+   della classe .project-gallery condivisa, quindi la sovrascrive senza
+   duplicare le regole di base che restano valide: background, overlay
+   shimmer, aspect-ratio della foto ecc.). */
+#projectGalleryKoa{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(14px,2.2vw,30px) clamp(12px,1.8vw,24px);
+  max-width:1100px;
+}
+#projectGalleryKoa .gallery-photo{width:auto;align-self:stretch;margin:0}
+#projectGalleryKoa .gallery-photo:nth-child(3n+2){margin-top:clamp(20px,4vw,54px)}
+#projectGalleryKoa .gallery-photo:nth-child(3n+3){margin-top:clamp(10px,2vw,28px)}
+/* variazione dei tempi di float/shimmer per colonna, così le foto non
+   respirano/scintillano tutte in perfetto sincrono (prima la variazione
+   veniva dalle classi gallery-pos-N, rimosse in script.js perché non
+   più necessarie con una griglia regolare) */
+#projectGalleryKoa .gallery-photo:nth-child(2n){--gf-dur:11s;--gf-delay:-3s;--gs-dur:9s;--gs-delay:-2s}
+#projectGalleryKoa .gallery-photo:nth-child(3n){--gf-dur:9.5s;--gf-delay:-5s;--gs-dur:8s;--gs-delay:-4s}
+#projectGalleryKoa .gallery-photo:nth-child(4n){--gf-dur:10.5s;--gf-delay:-1.5s;--gs-dur:7.5s;--gs-delay:-1s}
+@media(max-width:760px){
+  #projectGalleryKoa{grid-template-columns:1fr;gap:26px}
+  #projectGalleryKoa .gallery-photo:nth-child(3n+2),
+  #projectGalleryKoa .gallery-photo:nth-child(3n+3){margin-top:0}
+}
+
+/* =========================================================
+   V07.9 — THRESHOLD background transition + ABOUT/CONTACT texture
+   ========================================================= */
+
+/* Threshold had no atmosphere of its own — only the very faint shared
+   body::before layer showed through it, which read as flat/black next
+   to the Home hero (rich with floating photos). Gives it its own
+   slow, visible animated gradient so scrolling from Home into
+   Threshold feels like a continuation rather than a cut to black.
+
+   V07.12: palette made explicit (black -> sand -> olive, as requested)
+   and two more layers added — .threshold-waves (slow moving bands of
+   colour, the "onde invisibili") and .threshold-sparkle (small
+   twinkling points of light, the "scintillii"), both injected by
+   script.js with the same prepend pattern already used for Archive/
+   Project/About/Contact. All three layers stay deliberately low-
+   opacity/blurred/z-index:-1 behind the section's text (.threshold
+   already has isolation:isolate so -1 stays local to this section) —
+   noticeable while scrolling, but never competing with the main
+   statement for attention.
+
+   V07.13: Andrea reported the V07.12 colours/animations were not
+   visible in practice — confirmed by screenshot review, the alpha/
+   blur values were too soft against the very dark section background.
+   Alpha values roughly doubled, blur reduced so the sand/olive patches
+   read as distinct colour rather than a uniform haze, and the waves/
+   sparkle layers raised to a clearly perceptible intensity while
+   staying behind the text. */
+.threshold::before{
+  content:"";
+  position:absolute;
+  inset:-18%;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 58% 48% at 18% 12%, rgba(184,150,92,.48), transparent 70%),
+    radial-gradient(ellipse 54% 60% at 84% 88%, rgba(96,122,66,.46), transparent 72%),
+    linear-gradient(165deg,#0c0d0a 0%,#181a10 52%,#0a0b08 100%);
+  filter:blur(34px);
+  animation:thresholdDrift 28s ease-in-out infinite alternate;
+}
+.threshold-waves{
+  position:absolute;
+  inset:-18%;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.85;
+  background-repeat:no-repeat;
+  background-size:74% 64%, 66% 58%;
+  background-position:12% 32%, 82% 68%;
+  background-image:
+    radial-gradient(ellipse closest-side, rgba(184,150,92,.4), transparent 72%),
+    radial-gradient(ellipse closest-side, rgba(96,122,66,.4), transparent 74%);
+  filter:blur(38px);
+  animation:thresholdWaveShift 30s ease-in-out infinite;
+}
+/* V07.15 — "scintillii" rewrite: Andrea found the previous
+   .threshold-sparkle (three tiled repeating dot patterns via
+   background-image, directly above/below) too basic/geometric — same
+   "regular grid" complaint already fixed for About's dust layer in
+   V07.14. Replaced with the same idiom: .threshold-dust holds many
+   individually-randomised .threshold-mote elements (script.js), each
+   with its own position/size/blur/opacity/drift via inline custom
+   properties, so nothing repeats in a visible pattern. Reuses the
+   generic dustFloat keyframe declared with .dust-mote below (About) —
+   that keyframe only reads custom properties, so referencing it here
+   doesn't touch the About rule. .threshold already has
+   isolation:isolate + overflow:hidden (see the .threshold rule near
+   the top of this file), so this new layer stays safely contained
+   within the section like every other decorative layer here — no risk
+   of the same clipping bug found and fixed on About in V07.14. */
+.threshold-dust{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+}
+.threshold-mote{
+  position:absolute;
+  left:var(--dust-x);
+  top:var(--dust-y);
+  width:var(--dust-size);
+  height:var(--dust-size);
+  border-radius:50%;
+  background:var(--dust-color);
+  filter:blur(var(--dust-blur));
+  opacity:var(--dust-op-base);
+  animation:dustFloat var(--dust-dur) ease-in-out infinite;
+  animation-delay:var(--dust-delay);
+  mix-blend-mode:screen;
+}
+@keyframes thresholdDrift{
+  0%{transform:translate3d(-2%,-1%,0) scale(1.05)}
+  100%{transform:translate3d(2.5%,2%,0) scale(1.13)}
+}
+@keyframes thresholdWaveShift{
+  0%{background-position:12% 32%, 82% 68%}
+  50%{background-position:68% 58%, 22% 30%}
+  100%{background-position:12% 32%, 82% 68%}
+}
+@media(max-width:760px){
+  .threshold::before{filter:blur(22px)}
+  .threshold-waves{filter:blur(24px)}
+  .threshold-dust{opacity:.7}
+}
+@media(prefers-reduced-motion:reduce){
+  .threshold::before,.threshold-waves,.threshold-mote{animation:none}
+}
+
+/* About / Contact — the existing #about/#about::after and
+   #contact/#contact::after rules (V05.1) stay untouched; this adds
+   the animated colour drift (on the #about::before/#contact::before
+   pseudo already declared, currently empty, shared with #archive/
+   #project). About additionally gets a floating dust texture
+   (.about-dust, injected by script.js, About only — see V07.14 note
+   below). */
+/* V07.13: Andrea reported the anthracite/off-white tones added in
+   V07.12 were not visible — confirmed by screenshot review. Alpha
+   values roughly doubled and blur reduced so the drift reads as
+   distinct moving tone rather than dissolving into the black
+   background; still shares the one aboutDrift animation so every
+   tone (including the original three) keeps moving in sync. */
+#about::before{
+  inset:-20%;
+  background:
+    radial-gradient(ellipse 52% 44% at 24% 30%, rgba(150,138,100,.4), transparent 68%),
+    radial-gradient(ellipse 48% 52% at 84% 76%, rgba(74,100,78,.36), transparent 70%),
+    radial-gradient(ellipse 40% 36% at 52% 92%, rgba(160,146,104,.26), transparent 70%),
+    radial-gradient(ellipse 44% 40% at 68% 16%, rgba(72,74,72,.6), transparent 70%),
+    radial-gradient(ellipse 34% 30% at 10% 66%, rgba(233,231,223,.2), transparent 72%);
+  filter:blur(36px);
+  animation:aboutDrift 26s ease-in-out infinite alternate;
+}
+#contact::before{
+  inset:-20%;
+  background:
+    radial-gradient(ellipse 54% 48% at 62% 22%, rgba(58,82,88,.22), transparent 68%),
+    radial-gradient(ellipse 50% 54% at 14% 82%, rgba(114,101,70,.18), transparent 70%),
+    radial-gradient(ellipse 40% 36% at 88% 92%, rgba(70,92,78,.16), transparent 70%);
+  filter:blur(54px);
+  animation:contactDrift 28s ease-in-out infinite alternate;
+}
+@keyframes aboutDrift{
+  0%{transform:translate3d(-2%,-1%,0) scale(1.04)}
+  100%{transform:translate3d(2%,2%,0) scale(1.11)}
+}
+@keyframes contactDrift{
+  0%{transform:translate3d(2%,-1.5%,0) scale(1.05)}
+  100%{transform:translate3d(-2.5%,1.5%,0) scale(1.11)}
+}
+/* V07.14 — Andrea reported two problems with the old .section-grain
+   layer above: (1) it showed up on Contact too and visibly bled onto
+   the tail end of the Projects/YEVEON section above About — root
+   cause fixed with overflow:hidden on #about (see the #about rule
+   above); the layer is also no longer injected into #contact at all
+   (script.js), so it only exists on About now; (2) the look itself —
+   a tiled grid of fixed-size dots via repeating background-image —
+   read as too geometric/regular, not like floating dust. Replaced
+   with .about-dust: a container of individually-randomised
+   .dust-mote elements (script.js), same "many independently-timed
+   elements" idiom already used for .about-droplet/.float/the YEVEON
+   gallery — each mote has its own position, size, blur, opacity and
+   drift path, so nothing repeats in a visible pattern. */
+.about-dust{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  overflow:hidden;
+}
+.dust-mote{
+  position:absolute;
+  left:var(--dust-x);
+  top:var(--dust-y);
+  width:var(--dust-size);
+  height:var(--dust-size);
+  border-radius:50%;
+  background:rgba(224,218,196,.9);
+  filter:blur(var(--dust-blur));
+  opacity:var(--dust-op-base);
+  animation:dustFloat var(--dust-dur) ease-in-out infinite;
+  animation-delay:var(--dust-delay);
+}
+@keyframes dustFloat{
+  0%,100%{transform:translate3d(0,0,0);opacity:var(--dust-op-base)}
+  50%{transform:translate3d(var(--dust-dx),var(--dust-dy),0);opacity:var(--dust-op-peak)}
+}
+@media(max-width:760px){
+  #about::before,#contact::before{filter:blur(30px)}
+  .about-dust{opacity:.55}
+}
+@media(prefers-reduced-motion:reduce){
+  #about::before,#contact::before,.dust-mote{animation:none}
+}
+
+/* =========================================================
+   V07.10/V07.11 — SOUND PLAYER
+   Fullscreen overlay opened from the .audio-readout widget (fixed
+   bottom-right "SOUNDSCAPE" readout — see .audio-readout above and
+   the open/close logic in script.js). V07.10 opened it from a
+   "SOUND / FIELD 001" text in the Home hero instead; that element
+   was removed in V07.11 in favour of this one, since .audio-readout
+   is position:fixed and stays on screen from any section, not just
+   Home. Same overlay pattern already used for .viewer (fixed, dark,
+   blurred backdrop, display:none/flex toggle via a class), kept as
+   its own independent block instead of being merged into .viewer,
+   since the two are unrelated overlays with different content.
+   ========================================================= */
+.sound-player{position:fixed;inset:0;z-index:230;background:rgba(4,5,5,.982);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:6vh 6vw}
+.sound-player.open{display:flex;animation:viewerIn .4s ease both}
+.sound-player-panel{width:min(560px,92vw);max-height:84vh;display:flex;flex-direction:column}
+.sound-player-top{display:flex;justify-content:space-between;align-items:center;gap:14px;font:9px "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-bottom:18px;border-bottom:1px solid var(--line)}
+.sound-player-top-left{display:flex;align-items:center;gap:10px}
+/* V07.14: live readout of the shared ambient track's playback
+   position, written by the same timer() call (script.js) that already
+   updates #audioTime on the fixed widget — both read the exact same
+   value in the exact same function call, so this and the widget can
+   never drift apart. Requested by Andrea so the player itself shows a
+   synced time, not just the widget outside it. */
+.sound-player-time{color:var(--fg);font-weight:400;text-transform:none;letter-spacing:.06em}
+.sound-player-close{border:0;background:none;color:var(--fg);font-size:22px;line-height:1;cursor:pointer;padding:4px;transition:opacity .25s}
+.sound-player-close:hover{opacity:.65}
+.sound-player-list{list-style:none;margin:0;padding:0;overflow-y:auto;max-height:48vh}
+.sound-player-track{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;text-align:left;padding:15px 4px;border-bottom:1px solid var(--line);cursor:pointer;font:11px "DM Mono",monospace;letter-spacing:.04em;color:var(--muted);transition:color .25s}
+.sound-player-track:hover{color:var(--fg)}
+.sound-player-track.is-active{color:var(--fg)}
+.sound-player-track-title{flex:1}
+.track-playing-icon{display:flex;gap:2px;align-items:center;height:11px;flex-shrink:0;opacity:0}
+.sound-player-track.is-active .track-playing-icon{opacity:1}
+.track-playing-icon i{display:block;width:1px;height:11px;background:currentColor;transform:scaleY(.4);transform-origin:center}
+.sound-player.is-playing .sound-player-track.is-active .track-playing-icon i{animation:trackBar .9s ease-in-out infinite}
+.track-playing-icon i:nth-child(2){animation-delay:.15s}
+.track-playing-icon i:nth-child(3){animation-delay:.3s}
+.track-playing-icon i:nth-child(4){animation-delay:.45s}
+@keyframes trackBar{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.sound-player-controls{display:flex;align-items:center;justify-content:center;gap:30px;padding-top:26px}
+.sp-btn{border:0;background:none;color:var(--fg);cursor:pointer;padding:8px;transition:opacity .25s}
+.sp-btn:hover{opacity:.65}
+.sp-prev,.sp-next{font:14px "DM Mono",monospace}
+.sp-play{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sp-play-icon{display:block;position:relative;width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--fg);margin-left:3px}
+.sp-play.is-playing .sp-play-icon{width:9px;height:11px;border-width:0;margin-left:0}
+.sp-play.is-playing .sp-play-icon::before,.sp-play.is-playing .sp-play-icon::after{content:"";position:absolute;top:0;width:3px;height:11px;background:var(--fg)}
+.sp-play.is-playing .sp-play-icon::before{left:0}
+.sp-play.is-playing .sp-play-icon::after{right:0}
+@media(max-width:760px){
+  .sound-player{padding:5vh 6vw}
+  .sound-player-panel{max-height:88vh}
+  .sound-player-list{max-height:52vh}
+  .sound-player-controls{gap:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sound-player.open,.track-playing-icon i{animation:none}
+}
+
+/* =========================================================
+   V07.12 — YEVEON GALLERY LIGHT BEAM
+   Sits between the gallery's last phrase and .project-quote (see
+   index.html). Reuses the site's existing .reveal/in-view scroll
+   mechanism instead of a new IntersectionObserver — giving it the
+   "reveal" class is enough for it to fade in AND start its own
+   .lightbeam-glow animation the moment the visitor scrolls to it, per
+   Andrea's request. Colours (grey/olive/petrol/sand) are the exact
+   same desaturated palette already used for the section's own
+   background (.project-wave, V07.9/V07.10), animated as a smooth
+   colour crossfade (browsers interpolate between gradients with the
+   same stop structure) while the glow itself sweeps left to right.
+   ========================================================= */
+.project-lightbeam{
+  position:relative;
+  max-width:980px;
+  height:1px;
+  margin:8vw auto 0;
+  background:var(--line);
+}
+.lightbeam-glow{
+  position:absolute;
+  top:50%;
+  left:-22%;
+  width:22%;
+  height:70px;
+  transform:translate3d(0,-50%,0);
+  border-radius:50%;
+  filter:blur(22px);
+  mix-blend-mode:screen;
+  opacity:0;
+  pointer-events:none;
+}
+.project-lightbeam.in-view .lightbeam-glow{
+  opacity:.9;
+  animation:lightbeamSweep 9s ease-in-out infinite, lightbeamColor 9s linear infinite;
+}
+@keyframes lightbeamSweep{
+  0%{left:-22%}
+  100%{left:118%}
+}
+@keyframes lightbeamColor{
+  0%{background:radial-gradient(ellipse closest-side, rgba(150,152,134,.85), transparent 72%)}
+  25%{background:radial-gradient(ellipse closest-side, rgba(86,118,112,.85), transparent 72%)}
+  50%{background:radial-gradient(ellipse closest-side, rgba(74,100,132,.85), transparent 72%)}
+  75%{background:radial-gradient(ellipse closest-side, rgba(160,138,88,.85), transparent 72%)}
+  100%{background:radial-gradient(ellipse closest-side, rgba(150,152,134,.85), transparent 72%)}
+}
+@media(max-width:760px){
+  .lightbeam-glow{height:46px;filter:blur(16px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .lightbeam-glow{animation:none}
+  .project-lightbeam.in-view .lightbeam-glow{left:24%;background:radial-gradient(ellipse closest-side, rgba(120,130,120,.6), transparent 72%)}
+}
+
+/* =========================================================
+   V07.12 — ABOUT: FLOATING "DIGITAL DROPLETS"
+   Individually-floated blurred orbs (not a single repeating
+   background) so each one drifts up/down on its own timing, giving a
+   more organic, cinematic parallax than a flat pattern would — same
+   "several small elements, independently timed" idiom already used
+   for the hero's .float photos and the YEVEON gallery's photo float.
+   Generated by script.js (buildAboutDroplets()); position/size/timing
+   per droplet are set inline as CSS custom properties.
+   ========================================================= */
+.about-droplets{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.about-droplet{
+  position:absolute;
+  left:var(--drop-x,50%);
+  top:var(--drop-y,50%);
+  width:var(--drop-size,90px);
+  height:var(--drop-size,90px);
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(233,231,223,.85), rgba(150,154,146,.4) 55%, transparent 75%);
+  filter:blur(var(--drop-blur,14px));
+  opacity:var(--drop-op,.32);
+  animation:aboutDropletFloat var(--drop-dur,14s) ease-in-out infinite;
+  animation-delay:var(--drop-delay,0s);
+  will-change:transform;
+}
+@keyframes aboutDropletFloat{
+  0%,100%{transform:translate3d(0,0,0)}
+  50%{transform:translate3d(0,var(--drop-range,-46px),0)}
+}
+@media(max-width:760px){
+  .about-droplet{filter:blur(10px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .about-droplet{animation:none}
+}

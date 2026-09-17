@@ -1,0 +1,157 @@
+# Configurazione del pannello di modifica (Sveltia CMS).
+#
+# ATTENZIONE — riga da modificare prima di pubblicare:
+# sostituisci NOME-UTENTE/NOME-REPOSITORY qui sotto con il tuo vero
+# utente e nome del repository GitHub (es. andreacarrano/wyre-sito).
+# Le istruzioni complete sono in ISTRUZIONI_PUBBLICAZIONE.txt.
+backend:
+  name: github
+  repo: NOME-UTENTE/NOME-REPOSITORY
+  branch: main
+
+# Cartella dove finiscono le foto caricate dal pannello, e percorso con
+# cui vengono richiamate dal sito — stessa cartella già in uso oggi.
+media_folder: /images
+public_folder: /images
+
+collections:
+  - name: contenuti
+    label: Contenuti del sito
+    files:
+      - name: sito
+        label: "wYre — Tutti i contenuti"
+        file: content.json
+        fields:
+          - label: Info sito
+            name: site
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Nome brand", name: brand, widget: string }
+              - { label: "Sottotitolo (nome progetto)", name: project, widget: string }
+              - { label: "Email di contatto", name: email, widget: string }
+              - { label: "Link Instagram", name: instagram, widget: string }
+
+          - label: "Archivio fotografico (sezione ARCHIVE)"
+            name: archive
+            widget: list
+            summary: "{{fields.title}} — {{fields.category}}"
+            fields:
+              - { label: Foto, name: image, widget: image }
+              - label: Categoria
+                name: category
+                widget: select
+                options: [landscape, urban, liminal, astro]
+              - label: "Etichetta categoria"
+                name: label
+                widget: string
+                hint: 'Scrivi la categoria scelta sopra in maiuscolo, es. "LANDSCAPE"'
+              - { label: "Titolo foto", name: title, widget: string }
+              - { label: Descrizione, name: description, widget: string }
+              - { label: Anno, name: year, widget: string }
+
+          - label: "Progetto — YEVEON"
+            name: project
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Testo introduttivo", name: description, widget: text }
+              - { label: "Riga secondaria", name: secondary, widget: string }
+              - { label: "Citazione finale", name: quote, widget: string }
+              - label: "Galleria (foto e frasi, in ordine — trascina per riordinare)"
+                name: gallery
+                widget: list
+                typeKey: type
+                types:
+                  - label: Foto
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Foto, name: image, widget: image }
+                      - { label: 'Didascalia (es. "RUIN — 2026")', name: label, widget: string }
+                      - { label: "Testo alternativo (accessibilità)", name: alt, widget: string, required: false }
+                  - label: Frase
+                    name: phrase
+                    widget: object
+                    fields:
+                      - { label: "Testo in italiano", name: it, widget: string }
+                      - { label: "Testo in inglese", name: en, widget: string }
+
+          - label: "Progetto — KOA KI MEIRU"
+            name: koaProject
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Testo introduttivo", name: description, widget: text }
+              - { label: "Riga secondaria", name: secondary, widget: string }
+              - { label: "Citazione finale", name: quote, widget: string }
+              - label: "Galleria (foto e frasi, in ordine — trascina per riordinare)"
+                name: gallery
+                widget: list
+                typeKey: type
+                types:
+                  - label: Foto
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Foto, name: image, widget: image }
+                      - { label: 'Didascalia (es. "WING — 2026")', name: label, widget: string }
+                      - { label: "Testo alternativo (accessibilità)", name: alt, widget: string, required: false }
+                  - label: Frase
+                    name: phrase
+                    widget: object
+                    fields:
+                      - { label: "Testo in italiano", name: it, widget: string }
+                      - { label: "Testo in inglese", name: en, widget: string }
+
+          - label: About
+            name: about
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Frase principale", name: statement, widget: string }
+              - { label: "Testo descrittivo", name: body, widget: text }
+
+          - label: "Frasi Archivio (per categoria)"
+            name: archiveIntros
+            widget: object
+            collapsed: true
+            fields:
+              - label: All
+                name: all
+                widget: object
+                fields: &frase_archivio
+                  - { label: Etichetta, name: kicker, widget: string }
+                  - { label: "Testo in italiano", name: it, widget: string }
+                  - { label: "Testo in inglese", name: en, widget: string }
+              - { label: Landscape, name: landscape, widget: object, fields: *frase_archivio }
+              - { label: Urban, name: urban, widget: object, fields: *frase_archivio }
+              - { label: Liminal, name: liminal, widget: object, fields: *frase_archivio }
+              - { label: Astro, name: astro, widget: object, fields: *frase_archivio }
+
+          - label: "Tracklist audio (player SOUNDSCAPE)"
+            name: tracklist
+            widget: list
+            summary: "{{fields.file}}"
+            fields:
+              - label: "File audio"
+                name: file
+                widget: file
+                media_folder: /audio
+                public_folder: /audio
+
+          - label: "Colori di sfondo (avanzato — non modificare se non richiesto esplicitamente)"
+            name: atmospheres
+            widget: object
+            collapsed: true
+            fields:
+              - label: All
+                name: all
+                widget: object
+                fields: &colori_atmosfera
+                  - { label: "Colore principale", name: tint, widget: color }
+                  - { label: "Colore secondario", name: secondary, widget: color }
+              - { label: Landscape, name: landscape, widget: object, fields: *colori_atmosfera }
+              - { label: Urban, name: urban, widget: object, fields: *colori_atmosfera }
+              - { label: Liminal, name: liminal, widget: object, fields: *colori_atmosfera }
+              - { label: Astro, name: astro, widget: object, fields: *colori_atmosfera }

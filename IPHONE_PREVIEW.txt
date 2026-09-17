@@ -1,0 +1,24 @@
+YEVEON — PREVIEW ON IPHONE
+
+IMPORTANT:
+Do not open index.html directly from the iPhone Files app.
+The site uses CSS, JavaScript and image assets and is intended to be served
+through a local web server during development.
+
+EASIEST METHOD (Mac + iPhone):
+1. Put this folder on your Mac.
+2. Open Terminal in this folder.
+3. Run:
+       python3 preview.py
+4. The terminal will print two addresses.
+5. On the Mac open http://localhost:8000
+6. On the iPhone, while connected to the SAME Wi-Fi, open the second address,
+   for example:
+       http://192.168.1.20:8000
+
+If macOS firewall asks whether Python may accept incoming connections, allow it
+on the local network.
+
+FOR THE FINAL ONLINE SITE:
+You will not need this method. We will publish the project to free static
+hosting and open it on the iPhone with a normal HTTPS URL.

@@ -1,0 +1,165 @@
+wYre — Come pubblicare il sito online GRATIS con pannello di modifica
+======================================================================
+
+Questa guida ti porta, passo passo, dal file che hai scaricato ad avere
+il sito online, a costo zero, senza dominio da comprare, con un
+pannello di modifica raggiungibile da qualunque browser.
+
+Serve fare questi passaggi UNA SOLA VOLTA. Da quel momento in poi,
+ogni modifica futura (testi, foto, ordine delle foto) la fai dal
+pannello, senza più bisogno di me per queste cose — resto comunque a
+disposizione per modifiche più strutturali al sito.
+
+Tempo richiesto: 20-30 minuti circa, con calma.
+
+
+PASSO 1 — Crea un account GitHub (gratis)
+------------------------------------------
+GitHub è il posto dove vivranno i file del tuo sito. È gratuito, non
+serve carta di credito.
+
+1. Vai su github.com e clicca "Sign up".
+2. Scegli un nome utente, la tua email, una password.
+3. Conferma l'email quando richiesto.
+
+
+PASSO 2 — Crea un repository (la "cartella" del sito)
+--------------------------------------------------------
+1. Una volta dentro GitHub, clicca il "+" in alto a destra → "New
+   repository".
+2. Dai un nome (es. "wyre-sito"), lascialo "Public" o mettilo
+   "Private" (entrambi vanno bene e restano gratuiti).
+3. NON selezionare "Add a README file".
+4. Clicca "Create repository".
+
+
+PASSO 3 — Carica i file del sito
+-----------------------------------
+1. Nella pagina del repository appena creato, clicca "uploading an
+   existing file" (o "Add file" → "Upload files").
+2. Trascina dentro TUTTI i file e le cartelle che trovi nello zip che
+   ti ho mandato (index.html, styles.css, script.js, content.json,
+   build.js, la cartella images, la cartella audio, la cartella
+   admin — tutto, tranne i vecchi file V0X_NOTES.txt che sono solo
+   la cronologia delle versioni per me, non servono al sito online;
+   puoi comunque caricarli, non causano nessun problema se li includi).
+3. Scorri in basso e clicca "Commit changes" (va bene lasciare tutto
+   come proposto di default).
+
+Nota: NON serve caricare "content.js" — verrà creato automaticamente
+ad ogni pubblicazione dal file build.js, a partire da content.json.
+
+
+PASSO 4 — Collega il tuo repository al pannello di modifica
+----------------------------------------------------------------
+Il pannello (cartella "admin") ha bisogno di sapere qual è il tuo
+repository esatto.
+
+1. Dentro GitHub, apri il file "admin/config.yml" nel tuo repository.
+2. Clicca l'icona della matita (Edit this file).
+3. Trova questa riga vicino all'inizio:
+
+     repo: NOME-UTENTE/NOME-REPOSITORY
+
+   e sostituiscila con il tuo utente e il nome del repository che hai
+   scelto al Passo 2. Esempio, se il tuo utente GitHub è "acarrano" e
+   il repository si chiama "wyre-sito":
+
+     repo: acarrano/wyre-sito
+
+4. Scorri in basso e clicca "Commit changes".
+
+
+PASSO 5 — Crea un account Cloudflare (gratis)
+------------------------------------------------
+Cloudflare è il servizio che ospiterà il sito online, gratuitamente,
+dandoti anche un indirizzo web funzionante subito (del tipo
+tuosito.pages.dev) senza bisogno di comprare un dominio.
+
+1. Vai su cloudflare.com e clicca "Sign up".
+2. Crea l'account con la tua email (non serve carta di credito per il
+   piano gratuito).
+
+
+PASSO 6 — Pubblica il sito su Cloudflare Pages
+--------------------------------------------------
+1. Nella dashboard Cloudflare, cerca nel menu a sinistra "Workers &
+   Pages" (o "Compute (Workers)" a seconda della versione del menu).
+2. Clicca "Create" → scheda "Pages" → "Connect to Git".
+3. Autorizza Cloudflare ad accedere al tuo account GitHub quando te lo
+   chiede, poi seleziona il repository creato al Passo 2.
+4. Nella schermata delle impostazioni di build, imposta:
+   - Framework preset: None
+   - Build command:    node build.js
+   - Build output directory:   /
+5. Clicca "Save and Deploy".
+
+Dopo un minuto circa il sito sarà online, con un indirizzo gratuito
+tipo:
+
+     https://wyre-sito.pages.dev
+
+(il nome esatto dipende da come si chiama il tuo progetto — Cloudflare
+te lo mostra a fine pubblicazione).
+
+Se in futuro vorrai un dominio "vero" (es. www.wyre.it), potrai
+comprarlo quando vuoi e collegarlo a questo stesso progetto Cloudflare
+in pochi click, senza rifare nulla di quanto fatto finora.
+
+
+PASSO 7 — Accedi al pannello di modifica
+---------------------------------------------
+Il pannello si trova aggiungendo "/admin" all'indirizzo del sito, es.:
+
+     https://wyre-sito.pages.dev/admin
+
+Al primo accesso ti chiederà di autenticarti con un "Personal Access
+Token" di GitHub — è come una password speciale, dedicata solo a
+questo, che generi una volta sola:
+
+1. Su GitHub, vai su Settings (clicca la tua foto profilo in alto a
+   destra) → in fondo a sinistra "Developer settings" → "Personal
+   access tokens" → "Fine-grained tokens" → "Generate new token".
+2. Dagli un nome a piacere (es. "Pannello sito wYre").
+3. In "Repository access" scegli "Only select repositories" e
+   seleziona il tuo repository del sito.
+4. In "Permissions" → "Repository permissions" trova "Contents" e
+   imposta "Read and write".
+5. Clicca "Generate token" in fondo alla pagina.
+6. GitHub ti mostrerà il token UNA SOLA VOLTA: copialo subito (è una
+   stringa lunga che inizia con "github_pat_...").
+7. Torna sulla pagina /admin del tuo sito, incolla il token dove
+   richiesto per accedere.
+
+Conserva questo token in un posto sicuro (es. un gestore di password):
+se lo perdi, basta generarne uno nuovo ripetendo questi passaggi.
+
+
+COME FUNZIONA DA QUI IN AVANTI
+-----------------------------------
+Una volta dentro il pannello troverai le sezioni del sito già in
+italiano: Info sito, Archivio fotografico, Progetto YEVEON, Progetto
+KOA KI MEIRU, About, Frasi Archivio, Tracklist audio, e una sezione
+"Colori di sfondo" segnata come avanzata (da non toccare se non lo
+desideri esplicitamente).
+
+- Per cambiare un testo: clicca sul campo, modifica, salva.
+- Per cambiare una foto o aggiungerne una nuova: usa il campo
+  immagine, che ti fa scegliere/caricare il file direttamente dal tuo
+  computer.
+- Per riordinare le foto di una galleria: trascina le voci della lista
+  nell'ordine che preferisci.
+
+Ogni volta che clicchi "Save"/"Publish" nel pannello, la modifica viene
+salvata nel tuo repository GitHub, e il sito online si aggiorna da
+solo — di solito in meno di un minuto, senza che tu debba fare altro.
+
+
+SE QUALCOSA NON TORNA
+--------------------------
+Scrivimi pure in qualunque momento durante o dopo questi passaggi: se
+mi mandi un messaggio di errore o uno screenshot ti aiuto a risolvere.
+Una volta che il sito è online, possiamo anche fare insieme una prova
+rapida di modifica dal pannello per verificare che tutto funzioni
+esattamente come previsto prima che tu inizi a editare i contenuti
+veri.

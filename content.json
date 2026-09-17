@@ -1,0 +1,281 @@
+{
+  "site": {
+    "brand": "wYre",
+    "project": "YEVEON",
+    "email": "hello@example.com",
+    "instagram": "#"
+  },
+  "archive": [
+    {
+      "image": "images/01_corridor.jpg",
+      "category": "liminal",
+      "label": "LIMINAL",
+      "title": "PASSAGE",
+      "description": "A threshold without a destination.",
+      "year": "2026"
+    },
+    {
+      "image": "images/02_color_room.jpg",
+      "category": "urban",
+      "label": "URBAN",
+      "title": "PLAYGROUND",
+      "description": "A familiar place becoming uncertain.",
+      "year": "2026"
+    },
+    {
+      "image": "images/03_cathedral.jpg",
+      "category": "astro",
+      "label": "ASTRO",
+      "title": "MOON",
+      "description": "Architecture holding the night.",
+      "year": "2026"
+    },
+    {
+      "image": "images/04_chandelier.jpg",
+      "category": "urban",
+      "label": "URBAN",
+      "title": "LIGHT",
+      "description": "A small ceremony of illumination.",
+      "year": "2026"
+    },
+    {
+      "image": "images/05_blue_corridor.jpg",
+      "category": "liminal",
+      "label": "LIMINAL",
+      "title": "BLUE",
+      "description": "The passage between one state and another.",
+      "year": "2026"
+    },
+    {
+      "image": "images/06_empty_room.jpg",
+      "category": "liminal",
+      "label": "LIMINAL",
+      "title": "EMPTY",
+      "description": "Absence as a place.",
+      "year": "2026"
+    },
+    {
+      "image": "images/07_fortress.jpg",
+      "category": "landscape",
+      "label": "LANDSCAPE",
+      "title": "RUIN",
+      "description": "A memory left inside the landscape.",
+      "year": "2026"
+    },
+    {
+      "image": "images/08_caravan.jpg",
+      "category": "landscape",
+      "label": "LANDSCAPE",
+      "title": "ELSEWHERE",
+      "description": "Something waiting beyond the frame.",
+      "year": "2026"
+    }
+  ],
+  "project": {
+    "description": "Yeveon è una ricerca visiva sul confine tra realtà e percezione: paesaggi, architetture, interni e frammenti di quotidiano trattati come luoghi di memoria.",
+    "secondary": "Il progetto non segue una cronologia. Segue una sensazione.",
+    "quote": "Il luogo non cambia. Cambia il modo in cui lo ricordi.",
+    "gallery": [
+      {
+        "type": "image",
+        "image": "images/07_fortress.jpg",
+        "label": "RUIN — 2026",
+        "alt": "Night landscape with historic structure and garden"
+      },
+      {
+        "type": "image",
+        "image": "images/06_empty_room.jpg",
+        "label": "EMPTY — 2026",
+        "alt": "Empty interior room"
+      },
+      {
+        "type": "phrase",
+        "it": "Certe immagini non descrivono un luogo. Ne conservano la sensazione.",
+        "en": "Some images don't describe a place. They preserve its feeling."
+      },
+      {
+        "type": "image",
+        "image": "images/05_blue_corridor.jpg",
+        "label": "BLUE — 2026",
+        "alt": "Blue-lit corridor"
+      },
+      {
+        "type": "image",
+        "image": "images/01_corridor.jpg",
+        "label": "PASSAGE — 2026",
+        "alt": "Corridor passage"
+      },
+      {
+        "type": "phrase",
+        "it": "La luce cambia. Il ricordo resta.",
+        "en": "The light changes. The memory stays."
+      },
+      {
+        "type": "image",
+        "image": "images/03_cathedral.jpg",
+        "label": "MOON — 2026",
+        "alt": "Cathedral architecture at night"
+      },
+      {
+        "type": "image",
+        "image": "images/08_caravan.jpg",
+        "label": "ELSEWHERE — 2026",
+        "alt": "Caravan in landscape"
+      },
+      {
+        "type": "phrase",
+        "it": "Yeveon non ha una fine. Solo un punto in cui ci si ferma a guardare.",
+        "en": "Yeveon has no ending. Only a point where you stop to look."
+      }
+    ]
+  },
+  "koaProject": {
+    "description": "Koa Ki Meiru raccoglie gli scatti realizzati durante le riprese dei video musicali della mia band: un racconto per immagini nato dietro le quinte della musica.",
+    "secondary": "Luce di scena, attesa, movimento: frammenti rubati tra un ciak e l'altro.",
+    "quote": "Non è un dietro le quinte. È un altro modo di suonare la stessa canzone.",
+    "gallery": [
+      {
+        "type": "image",
+        "image": "images/koa_01.jpg",
+        "label": "WING — 2026",
+        "alt": "Woman in a teal forest holding a blue butterfly on her fingertip"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_02.jpg",
+        "label": "RAIN — 2026",
+        "alt": "Rain streaking a window against blurred green foliage"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_03.jpg",
+        "label": "DEPTHS — 2026",
+        "alt": "Underwater light rays filtering down through the sea"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_04.jpg",
+        "label": "MIRROR — 2026",
+        "alt": "A waterfall reflected in a still, leaf-covered pond"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_05.jpg",
+        "label": "REST — 2026",
+        "alt": "Close-up of a butterfly resting on a green leaf"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_06.jpg",
+        "label": "FLIGHT — 2026",
+        "alt": "Two blue butterflies in flight through misty foliage"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_07.jpg",
+        "label": "BUILD — 2026",
+        "alt": "A figure raising a freestanding wooden door frame in a sunset field"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_08.jpg",
+        "label": "VEIL — 2026",
+        "alt": "Woman in a white lace dress leaning against a door frame at sunset"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_09.jpg",
+        "label": "PUSH — 2026",
+        "alt": "A figure leaning into a closed door with both hands raised"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_10.jpg",
+        "label": "DOOR — 2026",
+        "alt": "A single door frame standing alone in a field at dusk"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_11.jpg",
+        "label": "DISTANCE — 2026",
+        "alt": "A distant figure standing in a grass field near a stone wall"
+      },
+      {
+        "type": "image",
+        "image": "images/koa_12.jpg",
+        "label": "HANDLE — 2026",
+        "alt": "Close-up of a door handle against a dusk sky"
+      }
+    ]
+  },
+  "about": {
+    "statement": "Fotografia come modo di osservare ciò che normalmente attraversiamo senza vedere.",
+    "body": "wYre è un'identità visiva costruita attorno a fotografia, sound design, atmosfera e sperimentazione digitale."
+  },
+  "atmospheres": {
+    "all": {
+      "tint": "#78806c",
+      "secondary": "#38514a"
+    },
+    "landscape": {
+      "tint": "#9a9b75",
+      "secondary": "#506b54"
+    },
+    "urban": {
+      "tint": "#aaa398",
+      "secondary": "#3e5b58"
+    },
+    "liminal": {
+      "tint": "#7e866e",
+      "secondary": "#345957"
+    },
+    "astro": {
+      "tint": "#7f8e9a",
+      "secondary": "#334756"
+    }
+  },
+  "archiveIntros": {
+    "all": {
+      "kicker": "All",
+      "it": "Ogni luogo lascia una traccia.",
+      "en": "Every place leaves a trace."
+    },
+    "landscape": {
+      "kicker": "Landscape",
+      "it": "Dove la luce tocca la terra, il tempo si ferma.",
+      "en": "Where light touches the earth, time becomes still."
+    },
+    "urban": {
+      "kicker": "Urban",
+      "it": "La città ricorda ciò che lasciamo indietro.",
+      "en": "The city remembers what we leave behind."
+    },
+    "liminal": {
+      "kicker": "Liminal",
+      "it": "Certi luoghi sembrano familiari per ragioni che non ricordiamo.",
+      "en": "Some places feel familiar for reasons we cannot remember."
+    },
+    "astro": {
+      "kicker": "Astro",
+      "it": "Guardiamo il buio per ricordarci quanto siamo piccoli.",
+      "en": "We look into the dark to remember how small we are."
+    }
+  },
+  "tracklist": [
+    {
+      "file": "audio/track-001.mp3"
+    },
+    {
+      "file": "audio/track-002.mp3"
+    },
+    {
+      "file": "audio/track-003.mp3"
+    },
+    {
+      "file": "audio/track-004.mp3"
+    },
+    {
+      "file": "audio/track-005.mp3"
+    }
+  ]
+}

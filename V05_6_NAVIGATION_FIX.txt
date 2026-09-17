@@ -1,0 +1,6 @@
+V05.6
+Navigation rebuilt with three independent layers:
+1) explicit #archive target on the intro control;
+2) capture-phase document listener;
+3) inline onclick fallback on the actual control.
+No visual design changes intended.
